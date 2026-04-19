@@ -2,1147 +2,267 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COTESA — Controle do Supervisor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>COTESA — Inspeção de Veículo</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+:root{
+  --navy:#0A1628;--navy-mid:#1A2E4A;--orange:#F26522;
+  --gray-light:#F4F6F9;--gray-mid:#CBD5E1;--gray-dark:#64748B;
+  --green:#22C55E;--red:#EF4444;--yellow:#EAB308;--border:#E2E8F0;
+  --shadow:0 2px 12px rgba(10,22,40,0.10);
+  --header-h:110px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--gray-light);color:var(--navy);}
 
-  :root {
-    --navy: #0A1628;
-    --navy-mid: #1A2E4A;
-    --navy-light: #2A4570;
-    --orange: #F26522;
-    --orange-light: #FF8C00;
-    --white: #FFFFFF;
-    --gray-light: #F4F6F9;
-    --gray-mid: #CBD5E1;
-    --gray-dark: #64748B;
-    --green: #22C55E;
-    --red: #EF4444;
-    --yellow: #EAB308;
-    --blue: #3B82F6;
-    --border: #E2E8F0;
-    --shadow: 0 2px 12px rgba(10,22,40,0.12);
-    --shadow-lg: 0 8px 32px rgba(10,22,40,0.16);
-  }
+/* ── HEADER ── */
+.app-header{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-mid) 100%);position:sticky;top:0;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,.28);}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:3px solid var(--orange);max-width:1100px;margin:0 auto;}
+.logo-area{display:flex;align-items:center;gap:10px;}
+.logo-box{background:var(--orange);color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:17px;padding:5px 11px;letter-spacing:1px;white-space:nowrap;}
+.header-title{color:#fff;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:15px;line-height:1.2;}
+.header-subtitle{color:var(--orange);font-size:10px;text-transform:uppercase;letter-spacing:1px;}
+.header-badge{background:rgba(242,101,34,.2);border:1px solid var(--orange);color:var(--orange);font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+.progress-bar-wrap{height:3px;background:rgba(255,255,255,.1);}
+.progress-bar-fill{height:100%;background:var(--orange);transition:width .4s ease;}
+.step-nav{display:flex;background:var(--navy-mid);padding:6px 20px;gap:4px;overflow-x:auto;scrollbar-width:none;max-width:1100px;margin:0 auto;}
+.step-nav::-webkit-scrollbar{display:none;}
+.step-pill{flex-shrink:0;padding:4px 14px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;color:var(--gray-mid);text-transform:uppercase;border:1px solid transparent;letter-spacing:.3px;transition:all .2s;}
+.step-pill.active{background:var(--orange);color:#fff;border-color:var(--orange);}
+.step-pill.done{background:rgba(34,197,94,.15);color:var(--green);border-color:var(--green);}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* ── LAYOUT ── */
+.content{max-width:1100px;margin:0 auto;padding:20px 16px 100px;}
+@media(min-width:768px){.content{padding:24px 28px 80px;}}
+@media(min-width:1024px){.content{padding:28px 40px 80px;}}
 
-  body {
-    font-family: 'Barlow', sans-serif;
-    background: var(--gray-light);
-    color: var(--navy);
-    min-height: 100vh;
-  }
+/* ── CARDS ── */
+.section-card{background:#fff;border-radius:12px;box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden;}
+.section-header{background:var(--navy);color:#fff;padding:13px 20px;display:flex;align-items:center;gap:10px;}
+.section-icon{width:30px;height:30px;background:var(--orange);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.section-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.4px;}
+.section-body{padding:20px;}
+@media(min-width:768px){.section-body{padding:24px;}}
 
-  /* ── RESPONSIVE ── */
-  .content { max-width: 1200px; margin: 0 auto; padding: 20px 16px; }
-  @media(min-width:768px){ .content { padding: 24px 28px; } }
-  @media(min-width:1024px){ .content { padding: 28px 40px; } }
+/* ── FORMS ── */
+.form-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+@media(min-width:480px){.form-grid{grid-template-columns:1fr 1fr;}}
+@media(min-width:900px){.form-grid.three{grid-template-columns:1fr 1fr 1fr;}}
+.field-group{display:flex;flex-direction:column;gap:5px;}
+.field-group.full{grid-column:1/-1;}
+.field-label{font-size:11px;font-weight:600;color:var(--gray-dark);text-transform:uppercase;letter-spacing:.5px;}
+.field-label .req{color:var(--orange);}
+input,select,textarea{border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'Barlow',sans-serif;font-size:15px;color:var(--navy);background:#fff;transition:border-color .2s;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px rgba(242,101,34,.1);}
+textarea{resize:vertical;min-height:80px;}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748B' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
 
-  /* KPI grid responsive */
-  .kpi-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 24px; }
-  @media(min-width:600px){ .kpi-grid { grid-template-columns: repeat(3,1fr); } }
-  @media(min-width:900px){ .kpi-grid { grid-template-columns: repeat(6,1fr); } }
+/* ── CHECKLIST ── */
+.checklist-item{border:1.5px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;transition:border-color .2s,background .2s;}
+.checklist-item.conform{border-color:var(--green);background:rgba(34,197,94,.04);}
+.checklist-item.nconform{border-color:var(--red);background:rgba(239,68,68,.04);}
+.checklist-item.na{border-color:var(--gray-mid);background:rgba(100,116,139,.04);}
+.item-header{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px;}
+.item-number{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--navy);color:#fff;border-radius:6px;font-size:12px;font-weight:700;flex-shrink:0;}
+.item-text{font-size:13px;line-height:1.55;color:var(--navy);flex:1;}
+@media(min-width:768px){.item-text{font-size:14px;}}
+.item-crit{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;white-space:nowrap;}
+.crit-alta{background:#FEE2E2;color:#DC2626;}
+.crit-media{background:#FEF3C7;color:#D97706;}
+.crit-baixa{background:#DCFCE7;color:#15803D;}
+.item-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.radio-group{display:flex;gap:6px;flex-wrap:wrap;}
+.radio-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border:1.5px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;user-select:none;}
+.radio-btn input{display:none;}
+.radio-btn.c-btn:has(input:checked){background:var(--green);color:#fff;border-color:var(--green);}
+.radio-btn.n-btn:has(input:checked){background:var(--red);color:#fff;border-color:var(--red);}
+.radio-btn.a-btn:has(input:checked){background:var(--gray-dark);color:#fff;border-color:var(--gray-dark);}
+.photo-upload{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.photo-btn{display:flex;align-items:center;gap:6px;padding:7px 13px;background:var(--navy);color:#fff;border:none;border-radius:20px;font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer;}
+.photo-input{display:none;}
+.photo-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px;}
+.photo-wrap{position:relative;display:inline-block;}
+.photo-thumb{width:52px;height:52px;border-radius:6px;object-fit:cover;border:2px solid var(--orange);cursor:pointer;}
+.photo-rm{position:absolute;top:-5px;right:-5px;width:18px;height:18px;background:var(--red);color:#fff;border:none;border-radius:50%;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.nc-obs{margin-top:8px;display:none;}
+.nc-obs.show{display:block;}
+.nc-obs textarea{border-color:var(--red);font-size:13px;min-height:64px;}
+.group-label{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--orange);padding:6px 0 4px;margin:14px 0 10px;border-bottom:2px solid var(--orange);}
+.group-label:first-child{margin-top:0;}
 
-  /* Collab list responsive */
-  .collab-list { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  @media(min-width:600px){ .collab-list { grid-template-columns: repeat(2,1fr); } }
-  @media(min-width:900px){ .collab-list { grid-template-columns: repeat(3,1fr); } }
+/* ── STATS ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+.stat-box{background:var(--gray-light);border-radius:10px;padding:12px 8px;text-align:center;}
+.stat-num{font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:800;line-height:1;}
+.stat-label{font-size:10px;color:var(--gray-dark);margin-top:3px;text-transform:uppercase;letter-spacing:.3px;}
+.summary-table{width:100%;border-collapse:collapse;font-size:13px;}
+.summary-table th{background:var(--navy);color:#fff;padding:8px 12px;text-align:left;font-weight:600;}
+.summary-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top;}
+.summary-table tr:nth-child(even) td{background:var(--gray-light);}
 
-  /* Toolbar responsive */
-  .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  .search-input { flex: 1; min-width: 160px; }
+/* ── BOTTOM BAR ── */
+.bottom-bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:3px solid var(--orange);padding:10px 20px;padding-bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;justify-content:flex-end;box-shadow:0 -4px 20px rgba(0,0,0,.1);z-index:100;}
+.btn{padding:12px 24px;border:none;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:all .2s;text-transform:uppercase;touch-action:manipulation;}
+.btn-sec{background:var(--gray-light);color:var(--navy);border:1.5px solid var(--border);}
+.btn-ora{background:var(--orange);color:#fff;}
+.btn-ora:hover{background:#D4541A;}
+.btn-nvy{background:var(--navy);color:#fff;}
+.btn-nvy:hover{background:var(--navy-mid);}
+@media(max-width:400px){.btn{padding:10px 14px;font-size:13px;}}
 
-  /* Inspection card responsive */
-  @media(max-width:500px){
-    .inspection-card { grid-template-columns: auto 1fr; }
-    .insp-actions { grid-column: 1/-1; }
-  }
+/* ── PAGES ── */
+.page{display:none;animation:fadeIn .25s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-  /* Modal responsive */
-  @media(max-width:600px){
-    .modal { border-radius: 12px 12px 0 0; max-height: 95vh; }
-    .modal-overlay { align-items: flex-end; padding: 0; }
-    .modal-footer { flex-direction: column; }
-    .modal-footer button { width: 100%; }
-    .btn-approve, .btn-reject { width: 100%; }
-  }
-  @media(min-width:600px){ .detail-grid { grid-template-columns: repeat(2,1fr); } }
-  @media(min-width:900px){ .detail-grid { grid-template-columns: repeat(3,1fr); } }
+/* ── COMPLETION ── */
+.completion{text-align:center;padding:40px 20px;}
+.completion-icon{width:80px;height:80px;background:linear-gradient(135deg,var(--orange),#FF8C00);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px;box-shadow:0 8px 24px rgba(242,101,34,.3);}
+.completion-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;color:var(--navy);margin-bottom:8px;}
+.completion-sub{color:var(--gray-dark);font-size:14px;margin-bottom:24px;line-height:1.6;}
+.completion-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+.btn-action{display:flex;align-items:center;gap:8px;padding:14px 26px;border:none;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .2s;touch-action:manipulation;}
+@media(max-width:400px){.btn-action{padding:12px 16px;font-size:14px;}}
+.info-box{margin-top:24px;padding:16px;background:var(--gray-light);border-radius:10px;text-align:left;font-size:12px;color:var(--gray-dark);line-height:1.7;}
 
-  /* Tab nav */
-  .tab-nav { padding: 0 16px; }
-  @media(min-width:768px){ .tab-nav { padding: 0 28px; } }
+/* ── OFFLINE ── */
+.offline-bar{position:fixed;top:0;left:0;right:0;background:var(--yellow);color:#fff;padding:5px;text-align:center;font-size:11px;font-weight:700;z-index:300;text-transform:uppercase;letter-spacing:.5px;transform:translateY(-100%);transition:transform .3s;}
+.offline-bar.show{transform:translateY(0);}
 
-  /* Data tools grid */
-  @media(min-width:600px){ .data-tools { grid-template-columns: repeat(2,1fr); } }
-  @media(min-width:900px){ .data-tools { grid-template-columns: repeat(4,1fr); } }
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:12px 26px;border-radius:30px;font-size:14px;font-weight:600;opacity:0;transition:all .3s;z-index:400;pointer-events:none;white-space:nowrap;max-width:92vw;text-align:center;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-  /* Touch targets */
-  .btn-primary, .btn-secondary, .btn-approve, .btn-reject, .tab-item { min-height: 44px; touch-action: manipulation; }
-  .inspection-card { cursor: pointer; touch-action: manipulation; }
-
-  /* Bottom safe area */
-  .modal-footer { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
-
-  /* ======== LOGIN ======== */
-  .login-wrap {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-    padding: 20px;
-  }
-  .login-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: var(--shadow-lg);
-    width: 100%;
-    max-width: 420px;
-    overflow: hidden;
-  }
-  .login-header {
-    background: var(--navy);
-    padding: 32px 28px 20px;
-    text-align: center;
-    border-bottom: 4px solid var(--orange);
-  }
-  .login-logo {
-    display: inline-block;
-    background: var(--orange);
-    color: white;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 28px;
-    padding: 8px 20px;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-  }
-  .login-title {
-    color: white;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 20px;
-    letter-spacing: 0.5px;
-  }
-  .login-sub {
-    color: var(--orange);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-top: 4px;
-  }
-  .login-body {
-    padding: 28px;
-  }
-  .login-shield {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, var(--orange), var(--orange-light));
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    margin: 0 auto 16px;
-  }
-  .login-body h2 {
-    text-align: center;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    margin-bottom: 8px;
-  }
-  .login-body p {
-    text-align: center;
-    font-size: 13px;
-    color: var(--gray-dark);
-    margin-bottom: 24px;
-  }
-
-  /* ======== APP ======== */
-  .app-wrap { display: none; }
-  .app-wrap.active { display: block; }
-  .login-wrap.hidden { display: none; }
-
-  .app-header {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  }
-  .header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 3px solid var(--orange);
-    max-width: 1200px; width: 100%;
-    margin: 0 auto;
-  }
-  .logo-area { display: flex; align-items: center; gap: 12px; }
-  .logo-box {
-    background: var(--orange);
-    color: white;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 18px;
-    padding: 6px 12px;
-    letter-spacing: 1px;
-  }
-  .header-title {
-    color: white;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-  }
-  .header-subtitle {
-    color: var(--orange);
-    font-size: 11px;
-    font-weight: 400;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-  .header-user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .user-badge {
-    background: rgba(242,101,34,0.2);
-    border: 1px solid var(--orange);
-    color: var(--orange);
-    font-size: 11px;
-    font-weight: 600;
-    padding: 6px 12px;
-    border-radius: 20px;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-  }
-  .btn-logout {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    color: white;
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 11px;
-    cursor: pointer;
-    font-family: inherit;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .btn-logout:hover { background: rgba(255,255,255,0.2); }
-
-  /* TABS */
-  .tab-nav {
-    background: var(--navy-mid);
-    padding: 0 20px;
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .tab-nav::-webkit-scrollbar { display: none; }
-  .tab-item {
-    flex-shrink: 0;
-    padding: 12px 20px;
-    color: var(--gray-mid);
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .tab-item:hover { color: white; }
-  .tab-item.active {
-    color: var(--orange);
-    border-bottom-color: var(--orange);
-  }
-  .tab-count {
-    background: var(--orange);
-    color: white;
-    font-size: 11px;
-    padding: 1px 8px;
-    border-radius: 10px;
-    font-family: 'Barlow', sans-serif;
-  }
-  .tab-item:not(.active) .tab-count {
-    background: rgba(255,255,255,0.1);
-    color: var(--gray-mid);
-  }
-
-  .content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 16px;
-  }
-
-  /* ======== DASHBOARD ======== */
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .kpi-card {
-    background: white;
-    border-radius: 12px;
-    padding: 16px;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
-  }
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 4px; height: 100%;
-    background: var(--orange);
-  }
-  .kpi-card.green::before { background: var(--green); }
-  .kpi-card.red::before { background: var(--red); }
-  .kpi-card.blue::before { background: var(--blue); }
-  .kpi-card.yellow::before { background: var(--yellow); }
-  .kpi-label {
-    font-size: 11px;
-    color: var(--gray-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    margin-bottom: 6px;
-  }
-  .kpi-value {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 36px;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--navy);
-  }
-  .kpi-trend {
-    font-size: 11px;
-    color: var(--gray-dark);
-    margin-top: 4px;
-  }
-
-  /* SECTION */
-  .section-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: var(--shadow);
-    margin-bottom: 20px;
-    overflow: hidden;
-  }
-  .section-header {
-    background: var(--navy);
-    color: white;
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-  .section-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .section-icon {
-    width: 32px;
-    height: 32px;
-    background: var(--orange);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-  }
-  .section-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    letter-spacing: 0.5px;
-  }
-  .section-body { padding: 20px; }
-
-  /* SEARCH AND FILTER */
-  .toolbar {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-  }
-  .search-input {
-    flex: 1;
-    min-width: 200px;
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-  }
-  .search-input:focus { outline: none; border-color: var(--orange); }
-  .filter-select {
-    padding: 10px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    background: white;
-    cursor: pointer;
-  }
-  .btn-primary {
-    padding: 10px 20px;
-    background: var(--orange);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .btn-primary:hover { background: #D4541A; }
-  .btn-secondary {
-    padding: 10px 20px;
-    background: white;
-    color: var(--navy);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .btn-secondary:hover { background: var(--gray-light); }
-
-  /* INSPECTION LIST */
-  .inspection-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .inspection-card {
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 14px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 14px;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: white;
-  }
-  .inspection-card:hover {
-    border-color: var(--orange);
-    box-shadow: var(--shadow);
-  }
-  .inspection-card.status-PENDENTE { border-left: 4px solid var(--yellow); }
-  .inspection-card.status-APROVADO { border-left: 4px solid var(--green); }
-  .inspection-card.status-REPROVADO { border-left: 4px solid var(--red); }
-  
-  .insp-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 22px;
-    flex-shrink: 0;
-    background: var(--gray-light);
-  }
-  .insp-info h4 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 2px;
-  }
-  .insp-meta {
-    display: flex;
-    gap: 10px;
-    font-size: 12px;
-    color: var(--gray-dark);
-    flex-wrap: wrap;
-  }
-  .insp-meta span { display: flex; align-items: center; gap: 4px; }
-  .insp-actions {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-
-  .status-badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
-  .status-PENDENTE { background: #FEF3C7; color: #D97706; }
-  .status-APROVADO { background: #DCFCE7; color: #15803D; }
-  .status-REPROVADO { background: #FEE2E2; color: #DC2626; }
-
-  .counters-bar {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-    font-size: 12px;
-  }
-  .counter {
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-weight: 600;
-    border: 1.5px solid;
-  }
-  .counter.total { border-color: var(--navy); color: var(--navy); background: rgba(10,22,40,0.05); }
-  .counter.pending { border-color: var(--yellow); color: #D97706; background: #FEF3C7; }
-  .counter.approved { border-color: var(--green); color: #15803D; background: #DCFCE7; }
-  .counter.rejected { border-color: var(--red); color: #DC2626; background: #FEE2E2; }
-
-  /* MODAL */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,22,40,0.7);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    backdrop-filter: blur(4px);
-  }
-  .modal-overlay.active { display: flex; }
-  .modal {
-    background: white;
-    border-radius: 16px;
-    max-width: 900px;
-    width: 100%;
-    max-height: 90vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--shadow-lg);
-  }
-  .modal-header {
-    background: var(--navy);
-    color: white;
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 3px solid var(--orange);
-  }
-  .modal-header h3 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-  }
-  .modal-close {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 24px;
-    cursor: pointer;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .modal-close:hover { background: rgba(255,255,255,0.1); }
-  .modal-body {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-  }
-  .modal-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    background: var(--gray-light);
-  }
-
-  /* DETAIL SECTIONS */
-  .detail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-  .detail-item {
-    background: var(--gray-light);
-    padding: 10px 12px;
-    border-radius: 8px;
-    border-left: 3px solid var(--orange);
-  }
-  .detail-label {
-    font-size: 10px;
-    color: var(--gray-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-    font-weight: 600;
-  }
-  .detail-value {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--navy);
-  }
-
-  .detail-section-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--navy);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 20px 0 10px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--orange);
-  }
-
-  .item-row {
-    display: grid;
-    grid-template-columns: 32px 1fr auto;
-    gap: 10px;
-    align-items: center;
-    padding: 10px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    margin-bottom: 6px;
-    background: white;
-  }
-  .item-row.nc {
-    background: #FEF2F2;
-    border-color: #FECACA;
-  }
-  .item-row-num {
-    width: 28px;
-    height: 28px;
-    background: var(--navy);
-    color: white;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .item-row-text {
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  .item-obs {
-    grid-column: 2 / 4;
-    font-size: 12px;
-    color: #DC2626;
-    font-style: italic;
-    margin-top: 4px;
-    padding: 4px 8px;
-    background: #FEE2E2;
-    border-radius: 6px;
-  }
-  .item-photos {
-    grid-column: 2 / 4;
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-    flex-wrap: wrap;
-  }
-  .item-photos img {
-    width: 60px;
-    height: 60px;
-    object-fit: cover;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 2px solid var(--orange);
-  }
-
-  /* APPROVAL SECTION */
-  .approval-box {
-    background: #FEF3C7;
-    border: 1.5px solid var(--yellow);
-    border-radius: 10px;
-    padding: 16px;
-    margin-top: 16px;
-  }
-  .approval-box.approved { background: #DCFCE7; border-color: var(--green); }
-  .approval-box.rejected { background: #FEE2E2; border-color: var(--red); }
-  .approval-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  /* COLABORADORES */
-  .collab-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 12px;
-  }
-  .collab-card {
-    background: white;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: all 0.2s;
-  }
-  .collab-card:hover {
-    border-color: var(--orange);
-    box-shadow: var(--shadow);
-  }
-  .collab-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--orange), var(--orange-light));
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 800;
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-  .collab-info { flex: 1; min-width: 0; }
-  .collab-name {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--navy);
-    line-height: 1.2;
-    margin-bottom: 2px;
-  }
-  .collab-meta {
-    font-size: 11px;
-    color: var(--gray-dark);
-    line-height: 1.4;
-    word-break: break-all;
-  }
-  .collab-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .icon-btn {
-    width: 28px;
-    height: 28px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    color: var(--gray-dark);
-  }
-  .icon-btn:hover { background: var(--gray-light); color: var(--navy); }
-  .icon-btn.danger:hover { background: #FEE2E2; color: var(--red); border-color: var(--red); }
-
-  /* FORM */
-  input[type="text"], input[type="email"], input[type="date"],
-  input[type="password"], select, textarea {
-    width: 100%;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-family: 'Barlow', sans-serif;
-    font-size: 14px;
-    color: var(--navy);
-    background: white;
-  }
-  input:focus, select:focus, textarea:focus {
-    outline: none;
-    border-color: var(--orange);
-    box-shadow: 0 0 0 3px rgba(242,101,34,0.1);
-  }
-  textarea { resize: vertical; min-height: 80px; }
-  .field-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
-  .field-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--gray-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .field-label .required { color: var(--orange); }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--gray-dark);
-  }
-  .empty-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-    opacity: 0.4;
-  }
-  .empty-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--navy);
-    margin-bottom: 4px;
-  }
-  .empty-sub { font-size: 13px; }
-
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--navy);
-    color: white;
-    padding: 12px 24px;
-    border-radius: 30px;
-    font-size: 14px;
-    font-weight: 600;
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 2000;
-    pointer-events: none;
-    white-space: nowrap;
-    max-width: 90vw;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  .page { display: none; }
-  .page.active { display: block; }
-
-  .btn-approve {
-    padding: 10px 20px;
-    background: var(--green);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  .btn-approve:hover { background: #16A34A; }
-  .btn-reject {
-    padding: 10px 20px;
-    background: var(--red);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    text-transform: uppercase;
-    cursor: pointer;
-  }
-  .btn-reject:hover { background: #DC2626; }
-
-  .data-tools {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-  }
-  .data-tool-card {
-    background: var(--gray-light);
-    border-radius: 10px;
-    padding: 16px;
-    border-left: 4px solid var(--orange);
-  }
-  .data-tool-card h4 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    margin-bottom: 6px;
-    color: var(--navy);
-  }
-  .data-tool-card p {
-    font-size: 12px;
-    color: var(--gray-dark);
-    margin-bottom: 10px;
-    line-height: 1.4;
-  }
-
-  @media (max-width: 600px) {
-    .inspection-card { grid-template-columns: 1fr; }
-    .insp-actions { justify-content: flex-start; flex-wrap: wrap; }
-    .modal-footer { flex-direction: column; }
-    .modal-footer button { width: 100%; }
-    .header-user .user-badge { display: none; }
-  }
+/* ── DESKTOP SPLIT ── */
+@media(min-width:900px){
+  .desktop-cols{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  .desktop-cols > .section-card{margin-bottom:0;}
+}
 </style>
 </head>
 <body>
 
-<!-- ====== LOGIN ====== -->
-<div class="login-wrap" id="loginWrap">
-  <div class="login-card">
-    <div class="login-header">
-      <div class="login-logo">COTESA</div>
-      <div class="login-title">Controle do Supervisor</div>
-      <div class="login-sub">Inspeções de Veículos</div>
-    </div>
-    <div class="login-body">
-      <div class="login-shield">🔐</div>
-      <h2>Acesso Restrito</h2>
-      <p>Somente supervisores autorizados</p>
-      <div class="field-group">
-        <label class="field-label">Usuário</label>
-        <input type="text" id="loginUser" placeholder="Nome do supervisor" value="supervisor">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Senha</label>
-        <input type="password" id="loginPass" placeholder="••••••••" onkeypress="if(event.key==='Enter') doLogin()">
-      </div>
-      <button class="btn-primary" style="width:100%;justify-content:center;padding:12px;margin-top:8px" onclick="doLogin()">ENTRAR</button>
-      <p style="font-size:11px;margin-top:16px;color:var(--gray-dark)">
-        🔒 Senha padrão inicial: <strong>cotesa2026</strong><br>
-        Altere em Configurações após o primeiro login
-      </p>
-    </div>
-  </div>
-</div>
+<div class="offline-bar" id="offlineBar">⚡ Sem Internet — Dados salvos localmente</div>
 
-<!-- ====== APP ====== -->
-<div class="app-wrap" id="appWrap">
-  <header class="app-header">
-    <div class="header-top">
-      <div class="logo-area">
-        <div class="logo-box">COTESA</div>
-        <div>
-          <div class="header-title">Controle do Supervisor</div>
-          <div class="header-subtitle">Inspeções · Contrato 3050 Vale</div>
-        </div>
-      </div>
-      <div class="header-user">
-        <span class="user-badge" id="userBadge">👤 Supervisor</span>
-        <button class="btn-logout" onclick="doLogout()">Sair</button>
+<header class="app-header">
+  <div class="header-top">
+    <div class="logo-area">
+      <div class="logo-box">COTESA</div>
+      <div>
+        <div class="header-title">Inspeção de Veículo</div>
+        <div class="header-subtitle">PRO-039864 · Contrato 3050 Vale</div>
       </div>
     </div>
-    <nav class="tab-nav">
-      <div class="tab-item active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 Dashboard</div>
-      <div class="tab-item" data-tab="inspections" onclick="switchTab('inspections')">
-        📋 Inspeções <span class="tab-count" id="tabCountInsp">0</span>
-      </div>
-      <div class="tab-item" data-tab="collaborators" onclick="switchTab('collaborators')">
-        👥 Colaboradores <span class="tab-count" id="tabCountCollab">0</span>
-      </div>
-      <div class="tab-item" data-tab="settings" onclick="switchTab('settings')">⚙️ Configurações</div>
+    <div class="header-badge" id="pageIndicator">Passo 1 / 3</div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar" style="width:33%"></div></div>
+  <div style="max-width:1100px;margin:0 auto;">
+    <nav class="step-nav">
+      <div class="step-pill active" data-step="0">1. Dados</div>
+      <div class="step-pill" data-step="1">2. Checklist</div>
+      <div class="step-pill" data-step="2">3. Revisão</div>
     </nav>
-  </header>
+  </div>
+</header>
 
-  <div class="content">
-    <!-- DASHBOARD -->
-    <div class="page active" id="page-dashboard">
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Total de Inspeções</div>
-          <div class="kpi-value" id="kpiTotal">0</div>
-          <div class="kpi-trend" id="kpiTotalTrend">Todas as inspeções</div>
-        </div>
-        <div class="kpi-card yellow">
-          <div class="kpi-label">Pendentes</div>
-          <div class="kpi-value" style="color:#D97706" id="kpiPending">0</div>
-          <div class="kpi-trend">Aguardando aprovação</div>
-        </div>
-        <div class="kpi-card green">
-          <div class="kpi-label">Aprovadas</div>
-          <div class="kpi-value" style="color:#15803D" id="kpiApproved">0</div>
-          <div class="kpi-trend">Com OK do supervisor</div>
-        </div>
-        <div class="kpi-card red">
-          <div class="kpi-label">Reprovadas</div>
-          <div class="kpi-value" style="color:#DC2626" id="kpiRejected">0</div>
-          <div class="kpi-trend">Devolvidas ao colaborador</div>
-        </div>
-        <div class="kpi-card blue">
-          <div class="kpi-label">Colaboradores</div>
-          <div class="kpi-value" style="color:#2563EB" id="kpiCollab">0</div>
-          <div class="kpi-trend">Equipe ativa</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Taxa Aprovação</div>
-          <div class="kpi-value" id="kpiRate">0%</div>
-          <div class="kpi-trend">Desempenho geral</div>
-        </div>
+<div class="content">
+
+<!-- PAGE 0: DADOS -->
+<div class="page active" id="page-0">
+  <div class="desktop-cols">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🚗</div>
+        <div class="section-title">Dados do Veículo</div>
       </div>
-
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-header-left">
-            <div class="section-icon">⏰</div>
-            <div class="section-title">Inspeções Recentes</div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">Data <span class="req">*</span></label>
+            <input type="date" id="dataInspecao">
           </div>
-          <button class="btn-secondary" onclick="switchTab('inspections')">Ver Todas →</button>
-        </div>
-        <div class="section-body">
-          <div class="inspection-list" id="recentList"></div>
-        </div>
-      </div>
-
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-header-left">
-            <div class="section-icon">🚨</div>
-            <div class="section-title">Itens Não Conformes Recorrentes</div>
+          <div class="field-group">
+            <label class="field-label">Hora <span class="req">*</span></label>
+            <input type="time" id="horaInspecao">
           </div>
-        </div>
-        <div class="section-body">
-          <div id="recurrentNC"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- INSPECTIONS -->
-    <div class="page" id="page-inspections">
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-header-left">
-            <div class="section-icon">📋</div>
-            <div class="section-title">Todas as Inspeções</div>
-          </div>
-        </div>
-        <div class="section-body">
-          <div class="toolbar">
-            <input type="text" class="search-input" id="searchInsp" placeholder="🔍 Buscar por placa, condutor, matrícula..." oninput="renderInspections()">
-            <select class="filter-select" id="filterStatus" onchange="renderInspections()">
-              <option value="">Todos status</option>
-              <option value="PENDENTE">⏳ Pendentes</option>
-              <option value="APROVADO">✓ Aprovadas</option>
-              <option value="REPROVADO">✗ Reprovadas</option>
+          <div class="field-group">
+            <label class="field-label">Tipo de Veículo <span class="req">*</span></label>
+            <select id="tipoVeiculo">
+              <option value="">Selecionar...</option>
+              <option>Veículo Leve (Passeio / Pick-up)</option>
+              <option>Caminhonete 4x4</option>
+              <option>Van / Micro-ônibus</option>
+              <option>Ônibus</option>
+              <option>Caminhão</option>
             </select>
-            <select class="filter-select" id="filterSort" onchange="renderInspections()">
-              <option value="recent">Mais recentes</option>
-              <option value="oldest">Mais antigas</option>
-              <option value="placa">Placa (A-Z)</option>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Placa <span class="req">*</span></label>
+            <input type="text" id="placa" placeholder="ABC-1234" style="text-transform:uppercase">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Modelo</label>
+            <input type="text" id="modelo" placeholder="Ex: Hilux, Cronos...">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Ano</label>
+            <input type="text" id="ano" placeholder="2024">
+          </div>
+          <div class="field-group full">
+            <label class="field-label">Km Atual</label>
+            <input type="text" id="km" placeholder="00000" inputmode="numeric">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">👤</div>
+        <div class="section-title">Dados do Responsável</div>
+      </div>
+      <div class="section-body">
+        <div class="form-grid">
+          <div class="field-group full">
+            <label class="field-label">Nome Completo <span class="req">*</span></label>
+            <input type="text" id="nomeCondutor" placeholder="Nome do condutor/inspetor" autocomplete="name">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Matrícula <span class="req">*</span></label>
+            <input type="text" id="matricula" placeholder="000000" inputmode="numeric">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Função</label>
+            <select id="funcao">
+              <option value="">Selecionar...</option>
+              <option>Eletricista de Linha</option>
+              <option>Inspetor de Linha</option>
+              <option>Técnico de Segurança</option>
+              <option>Supervisor</option>
+              <option>Motorista</option>
+              <option>Outro</option>
             </select>
-            <button class="btn-primary" onclick="importInspections()">📥 Importar JSON</button>
-            <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
           </div>
-          <div class="counters-bar" id="countersBar"></div>
-          <div class="inspection-list" id="inspectionList"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- COLLABORATORS -->
-    <div class="page" id="page-collaborators">
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-header-left">
-            <div class="section-icon">👥</div>
-            <div class="section-title">Gestão de Colaboradores</div>
-          </div>
-          <button class="btn-primary" onclick="openCollabModal()">+ Novo Colaborador</button>
-        </div>
-        <div class="section-body">
-          <div class="toolbar">
-            <input type="text" class="search-input" id="searchCollab" placeholder="🔍 Buscar colaborador..." oninput="renderCollaborators()">
-          </div>
-          <div class="collab-list" id="collabList"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div class="page" id="page-settings">
-      <div class="section-card">
-        <div class="section-header">
-          <div class="section-header-left">
-            <div class="section-icon">⚙️</div>
-            <div class="section-title">Configurações</div>
-          </div>
-        </div>
-        <div class="section-body">
-          <div class="detail-section-title">Credenciais do Supervisor</div>
-          <div class="field-group">
-            <label class="field-label">Nome do Supervisor</label>
-            <input type="text" id="cfgSupervisorName" placeholder="Seu nome">
+          <div class="field-group full">
+            <label class="field-label">E-mail <span class="req">*</span></label>
+            <input type="email" id="emailResponsavel" placeholder="seuemail@cotesa.com.br" autocomplete="email" inputmode="email">
           </div>
           <div class="field-group">
-            <label class="field-label">E-mail do Supervisor</label>
-            <input type="email" id="cfgSupervisorEmail" placeholder="supervisor@cotesa.com.br">
+            <label class="field-label">Nº CNH</label>
+            <input type="text" id="cnh" placeholder="00000000000" inputmode="numeric">
           </div>
           <div class="field-group">
-            <label class="field-label">Nova Senha (mín. 6 caracteres)</label>
-            <input type="password" id="cfgNewPass" placeholder="Deixe em branco para manter a atual">
+            <label class="field-label">Validade CNH</label>
+            <input type="date" id="validadeCNH">
           </div>
-          <button class="btn-primary" onclick="saveSettings()">💾 Salvar Configurações</button>
-
-          <div class="detail-section-title">Gestão de Dados</div>
-          <div class="data-tools">
-            <div class="data-tool-card">
-              <h4>📤 Exportar Inspeções</h4>
-              <p>Baixar backup de todas as inspeções em JSON para auditoria.</p>
-              <button class="btn-secondary" onclick="exportInspections()">Exportar JSON</button>
-            </div>
-            <div class="data-tool-card">
-              <h4>👥 Exportar Colaboradores</h4>
-              <p>Baixar lista completa da equipe em JSON.</p>
-              <button class="btn-secondary" onclick="exportCollaborators()">Exportar JSON</button>
-            </div>
-            <div class="data-tool-card">
-              <h4>📊 Relatório Consolidado</h4>
-              <p>PDF com resumo geral das inspeções e estatísticas.</p>
-              <button class="btn-secondary" onclick="exportConsolidatedPDF()">Gerar PDF</button>
-            </div>
-            <div class="data-tool-card" style="border-color:var(--red)">
-              <h4 style="color:var(--red)">🗑️ Limpar Dados</h4>
-              <p>Apaga todas as inspeções e colaboradores. Ação irreversível!</p>
-              <button class="btn-secondary" style="color:var(--red);border-color:var(--red)" onclick="clearAllData()">Apagar Tudo</button>
-            </div>
-          </div>
-
-          <div class="detail-section-title">Sobre</div>
-          <div style="font-size:13px;color:var(--gray-dark);line-height:1.7">
-            <strong style="color:var(--navy)">COTESA — Sistema de Controle de Inspeções</strong><br>
-            Versão 1.0 · 2026<br>
-            Contrato 3050 Vale · PRO-039864<br>
-            Gerência de Manutenção Infra e Elétrica<br><br>
-            <strong>Funciona 100% offline</strong> — todos os dados são armazenados localmente no dispositivo.<br>
-            Para sincronizar entre dispositivos, use as funções de Exportar/Importar JSON.
+          <div class="field-group full">
+            <label class="field-label">Gerência</label>
+            <input type="text" id="gerencia" value="GERÊNCIA DE MANUTENÇÃO INFRA E ELÉTRICA">
           </div>
         </div>
       </div>
@@ -1150,1131 +270,414 @@
   </div>
 </div>
 
-<!-- ====== MODAL: Inspection Detail ====== -->
-<div class="modal-overlay" id="modalInspection">
-  <div class="modal">
-    <div class="modal-header">
-      <h3 id="modalInspTitle">Detalhes da Inspeção</h3>
-      <button class="modal-close" onclick="closeModal('modalInspection')">×</button>
+<!-- PAGE 1: CHECKLIST -->
+<div class="page" id="page-1">
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">🔍</div>
+      <div class="section-title">Checklist de Inspeção Pré-Uso</div>
     </div>
-    <div class="modal-body" id="modalInspBody"></div>
-    <div class="modal-footer" id="modalInspFooter"></div>
+    <div class="section-body" id="checklistBody"></div>
+  </div>
+  <div class="section-card">
+    <div class="section-header">
+      <div class="section-icon">📝</div>
+      <div class="section-title">Observações Gerais</div>
+    </div>
+    <div class="section-body">
+      <textarea id="obsGerais" placeholder="Observações adicionais sobre o estado do veículo..."></textarea>
+    </div>
   </div>
 </div>
 
-<!-- ====== MODAL: Collaborator ====== -->
-<div class="modal-overlay" id="modalCollab">
-  <div class="modal" style="max-width:500px">
-    <div class="modal-header">
-      <h3 id="modalCollabTitle">Novo Colaborador</h3>
-      <button class="modal-close" onclick="closeModal('modalCollab')">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="field-group">
-        <label class="field-label">Nome Completo <span class="required">*</span></label>
-        <input type="text" id="collabNome" placeholder="Nome do colaborador">
+<!-- PAGE 2: REVISÃO / CONCLUSÃO -->
+<div class="page" id="page-2">
+  <div id="cardRevisao">
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📊</div>
+        <div class="section-title">Resumo da Inspeção</div>
       </div>
-      <div class="field-group">
-        <label class="field-label">Matrícula / CPF <span class="required">*</span></label>
-        <input type="text" id="collabMatricula" placeholder="000000">
+      <div class="section-body">
+        <div class="stats-bar" id="statsBar"></div>
+        <div id="summaryWrap"></div>
       </div>
-      <div class="field-group">
-        <label class="field-label">E-mail <span class="required">*</span></label>
-        <input type="email" id="collabEmail" placeholder="colaborador@cotesa.com.br">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Função</label>
-        <select id="collabFuncao">
-          <option value="">Selecionar...</option>
-          <option>Eletricista de Linha</option>
-          <option>Inspetor de Linha</option>
-          <option>Técnico de Segurança</option>
-          <option>Supervisor</option>
-          <option>Motorista</option>
-          <option>Outro</option>
-        </select>
-      </div>
-      <div class="field-group">
-        <label class="field-label">CNH</label>
-        <input type="text" id="collabCNH" placeholder="00000000000">
-      </div>
-      <div class="field-group">
-        <label class="field-label">Validade CNH</label>
-        <input type="date" id="collabValCNH">
-      </div>
-      <input type="hidden" id="collabEditId">
-    </div>
-    <div class="modal-footer">
-      <button class="btn-secondary" onclick="closeModal('modalCollab')">Cancelar</button>
-      <button class="btn-primary" onclick="saveCollaborator()">💾 Salvar</button>
     </div>
   </div>
+
+  <div class="section-card" id="cardConclusao" style="display:none">
+    <div class="section-body completion">
+      <div class="completion-icon">✅</div>
+      <div class="completion-title">Inspeção Registrada!</div>
+      <div class="completion-sub">Inspeção salva com sucesso no dispositivo.<br>Gere o PDF ou envie por e-mail ao responsável.</div>
+      <div class="completion-actions">
+        <button class="btn-action btn-nvy" onclick="gerarPDF()">📄 Gerar PDF</button>
+        <button class="btn-action btn-ora" onclick="enviarEmail()">📧 Enviar E-mail</button>
+        <button class="btn-action btn-sec" onclick="novaInspecao()">+ Nova Inspeção</button>
+      </div>
+      <div class="info-box">
+        <strong style="color:var(--navy)">📋 Como usar:</strong><br>
+        • <strong>GERAR PDF</strong>: Baixa relatório completo com fotos — salve no OneDrive/arquivos<br>
+        • <strong>ENVIAR E-MAIL</strong>: Gera o PDF + abre o e-mail preenchido. Após abrir, anexe o PDF baixado antes de enviar<br>
+        • <strong>NOVA INSPEÇÃO</strong>: Limpa o formulário para nova inspeção
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+
+<div class="bottom-bar" id="bottomBar">
+  <button class="btn btn-sec" id="btnPrev" onclick="prevStep()" style="display:none">← Anterior</button>
+  <button class="btn btn-ora" id="btnNext" onclick="nextStep()">Próximo →</button>
+  <button class="btn btn-nvy" id="btnSubmit" onclick="submitInspection()" style="display:none">✓ Salvar Inspeção</button>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ==================== STORAGE KEYS ====================
-const K_INSPECTIONS = 'cotesa_inspections_v1';
-const K_COLLABORATORS = 'cotesa_collaborators_v1';
-const K_SETTINGS = 'cotesa_supervisor_settings_v1';
-const K_AUTH = 'cotesa_supervisor_auth_v1';
+const CHECKLIST=[
+  {group:"TODOS OS VEÍCULOS",items:[
+    {id:"c1",num:1,text:"Pneus (avaliar TWI — não estar murcho, com bolhas ou rasgos em ambos os lados), rodas (fixação ou danos aparentes em ambos os lados) e dispositivo identificador de porcas solta (DIPS) alinhados e em todos os parafusos.",crit:"alta"},
+    {id:"c2",num:2,text:"Luzes de advertência no painel de controle, sistemas embarcados (telemetria e fadiga), sistema de iluminação e sinalização (geral), travas de portas e capô, e triângulo de segurança.",crit:"alta"},
+    {id:"c3",num:3,text:"Manutenção preventiva do veículo está em dia (conferir controle de manutenção).",crit:"alta"},
+    {id:"c4",num:4,text:"Para-brisa está sem trincas (10 cm de comprimento ou 4 cm de diâmetro) e sujidade excessiva. Retrovisores interno e externo em boas condições. Limpador de para-brisa com água e funcionando.",crit:"media"},
+    {id:"c5",num:5,text:"Faróis (alto e baixo), faroletes, luzes do painel, luzes de ré, de freio, da placa, de alerta, velocímetro, marcador de combustível, para-sol, buzina e ar-condicionado estão operantes.",crit:"alta"},
+    {id:"c6",num:6,text:"Condições dos pneus favoráveis ao uso (dentro do limite do TWI – Tread Wear Indicator).",crit:"alta"},
+    {id:"c7",num:7,text:"Dispositivos para sinalização e ferramentas para uso em emergências: triângulo refletivo, chave de rodas, macaco hidráulico e pneu estepe.",crit:"media"},
+    {id:"c8",num:8,text:"Sistema de monitoramento de localização e velocidade (telemetria/rastreador) está presente, fixado e operante.",crit:"alta"},
+    {id:"c9",num:9,text:"Alerta sonoro de marcha a ré está instalado e operante.",crit:"media"},
+    {id:"c10",num:10,text:"Sensor ou câmera de ré está presente e operante.",crit:"media"},
+    {id:"c11",num:11,text:"Vidro dianteiro laminado (todos os veículos, exceto linha amarela — consultar RAC 03).",crit:"baixa"},
+    {id:"c12",num:12,text:"Cinto de segurança do tipo 3 pontos para todos os ocupantes (veículos leves).",crit:"alta"},
+    {id:"c13",num:13,text:"Airbag frontal para motorista e passageiro do banco dianteiro e sistema antibloqueio de frenagem (ABS).",crit:"alta"},
+    {id:"c14",num:14,text:"Documentação do condutor: CNH e Passaporte de RAC 02 estão válidos e em dia.",crit:"alta"},
+    {id:"c15",num:15,text:"Extintor de incêndio tipo ABC carregado e dentro da validade (caminhões, ônibus e micro-ônibus).",crit:"alta"},
+  ]},
+  {group:"VEÍCULOS COLETIVOS (Ônibus / Van)",items:[
+    {id:"c16",num:16,text:"Saídas de emergência internas com funcionamento correto (alavanca, martelo e/ou alçapão), janelas com abertura máxima de 15 cm exceto a do motorista, extintor de incêndio, leitor de crachá e calços de roda (mín. 2).",crit:"alta"},
+    {id:"c17",num:17,text:"Leitor de crachá de passageiros presente e em funcionamento.",crit:"media"},
+    {id:"c18",num:18,text:"Sistema auxiliar de freio primário — retardador de velocidade (freio motor).",crit:"alta"},
+    {id:"c19",num:19,text:"Certificado de autorização de trânsito emitido pelos órgãos competentes (CAT, CETUB, ATF).",crit:"alta"},
+    {id:"c20",num:20,text:"Cronotacógrafo operante e com certificado de aferição válido.",crit:"media"},
+  ]},
+  {group:"ÁREA DE MINA / LAVRA",items:[
+    {id:"c21",num:21,text:"Sensor/alerta de proximidade com equipamentos pesados presente e operante.",crit:"alta"},
+    {id:"c22",num:22,text:"Bandeirola de alta-visibilidade na ponta superior do veículo.",crit:"alta"},
+    {id:"c23",num:23,text:"Giroflex (sinalização luminosa) presente e funcionando.",crit:"alta"},
+    {id:"c24",num:24,text:"Rádio de comunicação bidirecional presente e operante.",crit:"alta"},
+    {id:"c25",num:25,text:"Faixas refletivas de 2 cores de sinalização em todos os lados do veículo.",crit:"media"},
+    {id:"c26",num:26,text:"Tração 4x4 disponível e funcionando (somente área de mina/lavra).",crit:"alta"},
+  ]}
+];
 
-// Default settings
-const DEFAULT_SETTINGS = {
-  supervisorName: 'Roberto Felipe Melo de Lima',
-  supervisorEmail: 'roberto.lima@cotesa.com.br',
-  password: 'cotesa2026'
-};
+const SK='cotesa_inspections_v1';
+let resp={},photos={},step=0,inspId=null,saved=false;
 
-let currentInspectionId = null;
-
-// ==================== INIT ====================
-window.addEventListener('DOMContentLoaded', () => {
-  // Check if settings exist, if not create defaults
-  if (!localStorage.getItem(K_SETTINGS)) {
-    localStorage.setItem(K_SETTINGS, JSON.stringify(DEFAULT_SETTINGS));
-  }
-  // Check if already logged in
-  if (localStorage.getItem(K_AUTH) === 'true') {
-    showApp();
-  }
+window.addEventListener('DOMContentLoaded',()=>{
+  const n=new Date();
+  document.getElementById('dataInspecao').value=n.toISOString().slice(0,10);
+  document.getElementById('horaInspecao').value=n.toTimeString().slice(0,5);
+  buildChecklist();
+  window.addEventListener('online',()=>document.getElementById('offlineBar').classList.remove('show'));
+  window.addEventListener('offline',()=>document.getElementById('offlineBar').classList.add('show'));
+  if(!navigator.onLine)document.getElementById('offlineBar').classList.add('show');
 });
 
-// ==================== AUTH ====================
-function doLogin() {
-  const user = document.getElementById('loginUser').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  
-  if (pass === settings.password) {
-    localStorage.setItem(K_AUTH, 'true');
-    showApp();
-    showToast('✓ Bem-vindo, ' + settings.supervisorName);
-  } else {
-    showToast('⚠️ Senha incorreta');
-    document.getElementById('loginPass').value = '';
-  }
-}
+function toast(msg,d=3000){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
 
-function doLogout() {
-  if (!confirm('Deseja realmente sair?')) return;
-  localStorage.removeItem(K_AUTH);
-  document.getElementById('loginWrap').classList.remove('hidden');
-  document.getElementById('appWrap').classList.remove('active');
-  document.getElementById('loginPass').value = '';
-}
-
-function showApp() {
-  document.getElementById('loginWrap').classList.add('hidden');
-  document.getElementById('appWrap').classList.add('active');
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  document.getElementById('userBadge').textContent = '👤 ' + settings.supervisorName;
-  document.getElementById('cfgSupervisorName').value = settings.supervisorName;
-  document.getElementById('cfgSupervisorEmail').value = settings.supervisorEmail;
-  refreshAll();
-}
-
-// ==================== TABS ====================
-function switchTab(tab) {
-  document.querySelectorAll('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  if (tab === 'dashboard') renderDashboard();
-  if (tab === 'inspections') renderInspections();
-  if (tab === 'collaborators') renderCollaborators();
-  window.scrollTo(0, 0);
-}
-
-// ==================== DATA HELPERS ====================
-function getInspections() {
-  return JSON.parse(localStorage.getItem(K_INSPECTIONS) || '[]');
-}
-function saveInspections(arr) {
-  localStorage.setItem(K_INSPECTIONS, JSON.stringify(arr));
-}
-function getCollaborators() {
-  return JSON.parse(localStorage.getItem(K_COLLABORATORS) || '[]');
-}
-function saveCollaborators(arr) {
-  localStorage.setItem(K_COLLABORATORS, JSON.stringify(arr));
-}
-
-function refreshAll() {
-  const tab = document.querySelector('.tab-item.active')?.dataset.tab || 'dashboard';
-  const insps = getInspections();
-  const collabs = getCollaborators();
-  document.getElementById('tabCountInsp').textContent = insps.length;
-  document.getElementById('tabCountCollab').textContent = collabs.length;
-  switchTab(tab);
-}
-
-// ==================== DASHBOARD ====================
-function renderDashboard() {
-  const insps = getInspections();
-  const collabs = getCollaborators();
-  const pending = insps.filter(i => i.status === 'PENDENTE').length;
-  const approved = insps.filter(i => i.status === 'APROVADO').length;
-  const rejected = insps.filter(i => i.status === 'REPROVADO').length;
-
-  document.getElementById('kpiTotal').textContent = insps.length;
-  document.getElementById('kpiPending').textContent = pending;
-  document.getElementById('kpiApproved').textContent = approved;
-  document.getElementById('kpiRejected').textContent = rejected;
-  document.getElementById('kpiCollab').textContent = collabs.length;
-  const rate = insps.length ? Math.round(approved / insps.length * 100) : 0;
-  document.getElementById('kpiRate').textContent = rate + '%';
-
-  // Recent list
-  const recent = [...insps].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 5);
-  const recentList = document.getElementById('recentList');
-  if (recent.length === 0) {
-    recentList.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>
-      <div class="empty-title">Nenhuma inspeção ainda</div>
-      <div class="empty-sub">As inspeções importadas/recebidas aparecerão aqui</div></div>`;
-  } else {
-    recentList.innerHTML = recent.map(renderInspectionCard).join('');
-  }
-
-  // Recurrent NC items
-  const ncMap = {};
-  insps.forEach(i => {
-    (i.items || []).filter(it => it.resposta === 'N').forEach(it => {
-      ncMap[it.num] = ncMap[it.num] || { num: it.num, text: it.text, count: 0 };
-      ncMap[it.num].count++;
-    });
-  });
-  const topNC = Object.values(ncMap).sort((a,b) => b.count - a.count).slice(0, 5);
-  const recEl = document.getElementById('recurrentNC');
-  if (topNC.length === 0) {
-    recEl.innerHTML = `<div class="empty-state" style="padding:30px">
-      <div style="font-size:32px;margin-bottom:8px">✅</div>
-      <div style="color:var(--green);font-weight:600">Nenhuma não conformidade registrada</div></div>`;
-  } else {
-    recEl.innerHTML = topNC.map(nc => `
-      <div style="display:flex;gap:12px;padding:10px;border-bottom:1px solid var(--border);align-items:center">
-        <div style="width:36px;height:36px;background:var(--red);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">${nc.count}</div>
-        <div style="flex:1">
-          <div style="font-weight:600;font-size:13px">Item ${nc.num}</div>
-          <div style="font-size:12px;color:var(--gray-dark)">${nc.text.substring(0, 100)}...</div>
+function buildChecklist(){
+  const body=document.getElementById('checklistBody');
+  body.innerHTML='';
+  CHECKLIST.forEach(g=>{
+    const gl=document.createElement('div');gl.className='group-label';gl.textContent=g.group;body.appendChild(gl);
+    g.items.forEach(item=>{
+      const d=document.createElement('div');
+      d.className='checklist-item';d.id='iw-'+item.id;
+      d.innerHTML=`
+        <div class="item-header">
+          <div class="item-number">${item.num}</div>
+          <div class="item-text">${item.text}</div>
+          <span class="item-crit crit-${item.crit}">${item.crit==='alta'?'🔴 Alta':item.crit==='media'?'🟡 Média':'🟢 Baixa'}</span>
         </div>
-      </div>
-    `).join('');
-  }
-}
-
-// ==================== INSPECTIONS LIST ====================
-function renderInspectionCard(i) {
-  const ncCount = i.resumo?.naoConforme || 0;
-  const icon = i.status === 'APROVADO' ? '✅' : i.status === 'REPROVADO' ? '❌' : '⏳';
-  return `
-    <div class="inspection-card status-${i.status}" onclick="openInspection('${i.id}')">
-      <div class="insp-icon">${icon}</div>
-      <div class="insp-info">
-        <h4>${i.dados.placa} · ${i.dados.modelo || 'Veículo'}</h4>
-        <div class="insp-meta">
-          <span>👤 ${i.dados.nomeCondutor}</span>
-          <span>📅 ${formatDate(i.dados.dataInspecao)} ${i.dados.horaInspecao}</span>
-          ${ncCount > 0 ? `<span style="color:var(--red);font-weight:700">⚠️ ${ncCount} N/C</span>` : ''}
-        </div>
-      </div>
-      <div class="insp-actions">
-        <span class="status-badge status-${i.status}">${i.status}</span>
-      </div>
-    </div>
-  `;
-}
-
-function renderInspections() {
-  const insps = getInspections();
-  const search = document.getElementById('searchInsp').value.toLowerCase();
-  const status = document.getElementById('filterStatus').value;
-  const sort = document.getElementById('filterSort').value;
-
-  let filtered = insps.filter(i => {
-    const matchStatus = !status || i.status === status;
-    const matchSearch = !search ||
-      (i.dados.placa || '').toLowerCase().includes(search) ||
-      (i.dados.nomeCondutor || '').toLowerCase().includes(search) ||
-      (i.dados.matricula || '').toLowerCase().includes(search);
-    return matchStatus && matchSearch;
-  });
-
-  if (sort === 'recent') filtered.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-  if (sort === 'oldest') filtered.sort((a,b) => new Date(a.timestamp) - new Date(b.timestamp));
-  if (sort === 'placa') filtered.sort((a,b) => (a.dados.placa || '').localeCompare(b.dados.placa || ''));
-
-  const total = insps.length;
-  const pending = insps.filter(i => i.status === 'PENDENTE').length;
-  const approved = insps.filter(i => i.status === 'APROVADO').length;
-  const rejected = insps.filter(i => i.status === 'REPROVADO').length;
-
-  document.getElementById('countersBar').innerHTML = `
-    <div class="counter total">Total: ${total}</div>
-    <div class="counter pending">⏳ Pendentes: ${pending}</div>
-    <div class="counter approved">✓ Aprovadas: ${approved}</div>
-    <div class="counter rejected">✗ Reprovadas: ${rejected}</div>
-  `;
-
-  const list = document.getElementById('inspectionList');
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🔍</div>
-      <div class="empty-title">Nenhuma inspeção encontrada</div>
-      <div class="empty-sub">Ajuste os filtros ou importe um arquivo JSON</div></div>`;
-  } else {
-    list.innerHTML = filtered.map(renderInspectionCard).join('');
-  }
-}
-
-// ==================== INSPECTION DETAIL ====================
-function openInspection(id) {
-  const insps = getInspections();
-  const i = insps.find(x => x.id === id);
-  if (!i) return;
-  currentInspectionId = id;
-
-  document.getElementById('modalInspTitle').textContent = `Inspeção ${i.dados.placa} · ${formatDate(i.dados.dataInspecao)}`;
-  
-  const ncItems = (i.items || []).filter(it => it.resposta === 'N');
-  const ncCount = ncItems.length;
-
-  let html = `
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-      <span class="status-badge status-${i.status}" style="font-size:13px;padding:6px 14px">${i.status}</span>
-      <span style="font-size:12px;color:var(--gray-dark)">ID: ${i.id}</span>
-      <span style="font-size:12px;color:var(--gray-dark)">Registrado em ${new Date(i.timestamp).toLocaleString('pt-BR')}</span>
-    </div>
-
-    <div class="detail-section-title">Dados do Veículo</div>
-    <div class="detail-grid">
-      <div class="detail-item"><div class="detail-label">Placa</div><div class="detail-value">${i.dados.placa}</div></div>
-      <div class="detail-item"><div class="detail-label">Tipo</div><div class="detail-value">${i.dados.tipoVeiculo || '-'}</div></div>
-      <div class="detail-item"><div class="detail-label">Modelo</div><div class="detail-value">${i.dados.modelo || '-'}</div></div>
-      <div class="detail-item"><div class="detail-label">Ano</div><div class="detail-value">${i.dados.ano || '-'}</div></div>
-      <div class="detail-item"><div class="detail-label">Km Atual</div><div class="detail-value">${i.dados.km || '-'}</div></div>
-      <div class="detail-item"><div class="detail-label">Data / Hora</div><div class="detail-value">${formatDate(i.dados.dataInspecao)} ${i.dados.horaInspecao}</div></div>
-    </div>
-
-    <div class="detail-section-title">Responsável pela Inspeção</div>
-    <div class="detail-grid">
-      <div class="detail-item"><div class="detail-label">Nome</div><div class="detail-value">${i.dados.nomeCondutor}</div></div>
-      <div class="detail-item"><div class="detail-label">Matrícula</div><div class="detail-value">${i.dados.matricula}</div></div>
-      <div class="detail-item"><div class="detail-label">Função</div><div class="detail-value">${i.dados.funcao || '-'}</div></div>
-      <div class="detail-item"><div class="detail-label">E-mail</div><div class="detail-value" style="font-size:12px">${i.dados.emailResponsavel}</div></div>
-      <div class="detail-item"><div class="detail-label">CNH</div><div class="detail-value">${i.dados.cnh || '-'} ${i.dados.validadeCNH ? '(val: ' + formatDate(i.dados.validadeCNH) + ')' : ''}</div></div>
-    </div>
-
-    <div class="detail-section-title">Resumo (${i.resumo.total} itens)</div>
-    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
-      <div style="flex:1;min-width:100px;background:#DCFCE7;padding:10px;border-radius:8px;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:28px;font-weight:800;color:#15803D">${i.resumo.conforme}</div>
-        <div style="font-size:11px;color:#15803D">CONFORME</div>
-      </div>
-      <div style="flex:1;min-width:100px;background:#FEE2E2;padding:10px;border-radius:8px;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:28px;font-weight:800;color:#DC2626">${i.resumo.naoConforme}</div>
-        <div style="font-size:11px;color:#DC2626">NÃO CONFORME</div>
-      </div>
-      <div style="flex:1;min-width:100px;background:#F1F5F9;padding:10px;border-radius:8px;text-align:center">
-        <div style="font-family:'Barlow Condensed';font-size:28px;font-weight:800;color:#64748B">${i.resumo.naoAplicavel}</div>
-        <div style="font-size:11px;color:#64748B">N/A</div>
-      </div>
-    </div>
-  `;
-
-  // NC Items
-  if (ncCount > 0) {
-    html += `<div class="detail-section-title" style="color:var(--red)">⚠️ Itens Não Conformes (${ncCount})</div>`;
-    ncItems.forEach(it => {
-      html += `
-        <div class="item-row nc">
-          <div class="item-row-num">${it.num}</div>
-          <div class="item-row-text">${it.text}</div>
-          <span class="status-badge status-REPROVADO">N/C</span>
-          ${it.observacao ? `<div class="item-obs">💬 ${it.observacao}</div>` : ''}
-          ${it.photos && it.photos.length > 0 ? `<div class="item-photos">${it.photos.map(p => `<img src="${p}" onclick="viewPhoto('${p.replace(/'/g, "\\'")}')">`).join('')}</div>` : ''}
-        </div>
-      `;
-    });
-  }
-
-  // All items (collapsed)
-  html += `<details style="margin-top:16px"><summary style="cursor:pointer;font-weight:600;padding:8px;background:var(--gray-light);border-radius:8px">Ver todos os ${i.items.length} itens do checklist</summary><div style="margin-top:10px">`;
-  (i.items || []).forEach(it => {
-    const respColor = it.resposta === 'C' ? 'status-APROVADO' : it.resposta === 'N' ? 'status-REPROVADO' : 'status-PENDENTE';
-    const respText = it.resposta === 'C' ? 'CONFORME' : it.resposta === 'N' ? 'N/C' : 'N/A';
-    html += `
-      <div class="item-row">
-        <div class="item-row-num">${it.num}</div>
-        <div class="item-row-text">${it.text}</div>
-        <span class="status-badge ${respColor}">${respText}</span>
-        ${it.photos && it.photos.length > 0 ? `<div class="item-photos">${it.photos.map(p => `<img src="${p}" onclick="viewPhoto('${p.replace(/'/g, "\\'")}')">`).join('')}</div>` : ''}
-      </div>
-    `;
-  });
-  html += `</div></details>`;
-
-  if (i.obsGerais) {
-    html += `<div class="detail-section-title">Observações Gerais</div>
-      <div style="background:var(--gray-light);padding:12px;border-radius:8px;font-size:13px;white-space:pre-wrap">${i.obsGerais}</div>`;
-  }
-
-  // Signature
-  if (i.assinatura) {
-    html += `<div class="detail-section-title">Assinatura do Colaborador</div>
-      <div style="background:white;border:1px solid var(--border);border-radius:8px;padding:10px;display:inline-block">
-        <img src="${i.assinatura}" style="height:80px;max-width:100%">
-        <div style="font-size:12px;color:var(--gray-dark);margin-top:4px;text-align:center">${i.dados.nomeCondutor} · ${i.dados.matricula}</div>
-      </div>`;
-  }
-
-  // Approval status
-  if (i.aprovacaoSupervisor) {
-    const a = i.aprovacaoSupervisor;
-    const cls = a.aprovado ? 'approved' : 'rejected';
-    html += `<div class="approval-box ${cls}">
-      <div class="approval-title">${a.aprovado ? '✅ INSPEÇÃO APROVADA' : '❌ INSPEÇÃO REPROVADA — DEVOLVIDA'}</div>
-      <div style="font-size:13px">
-        <strong>Supervisor:</strong> ${a.supervisor}<br>
-        <strong>Data:</strong> ${new Date(a.data).toLocaleString('pt-BR')}<br>
-        ${a.observacao ? `<strong>Observação:</strong> ${a.observacao}` : ''}
-      </div>
-    </div>`;
-  } else {
-    html += `<div class="approval-box">
-      <div class="approval-title">⏳ AGUARDANDO APROVAÇÃO DO SUPERVISOR</div>
-      <div style="font-size:13px;margin-bottom:10px">Revise os itens da inspeção e aprove (OK) ou reprove (devolver ao colaborador para correção).</div>
-      <div class="field-group">
-        <label class="field-label">Observação (obrigatória ao reprovar)</label>
-        <textarea id="approvalObs" placeholder="Ex.: Corrigir o item 6 — tirar nova foto mostrando o TWI do pneu..."></textarea>
-      </div>
-    </div>`;
-  }
-
-  document.getElementById('modalInspBody').innerHTML = html;
-
-  // Footer actions
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  let footer = `<button class="btn-secondary" onclick="generateInspectionPDF('${i.id}')">📄 Gerar PDF</button>
-    <button class="btn-secondary" onclick="emailColaborador('${i.id}')">📧 E-mail Colaborador</button>`;
-  if (!i.aprovacaoSupervisor) {
-    footer += `
-      <button class="btn-reject" onclick="rejectInspection('${i.id}')">✗ REPROVAR / DEVOLVER</button>
-      <button class="btn-approve" onclick="approveInspection('${i.id}')">✓ APROVAR (OK)</button>`;
-  } else {
-    footer += `<button class="btn-secondary" onclick="resetApproval('${i.id}')">↺ Resetar Aprovação</button>`;
-  }
-  document.getElementById('modalInspFooter').innerHTML = footer;
-
-  document.getElementById('modalInspection').classList.add('active');
-}
-
-function approveInspection(id) {
-  const insps = getInspections();
-  const idx = insps.findIndex(x => x.id === id);
-  if (idx === -1) return;
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  const obs = document.getElementById('approvalObs')?.value || '';
-  
-  insps[idx].status = 'APROVADO';
-  insps[idx].aprovacaoSupervisor = {
-    aprovado: true,
-    supervisor: settings.supervisorName,
-    data: new Date().toISOString(),
-    observacao: obs
-  };
-  saveInspections(insps);
-  closeModal('modalInspection');
-  showToast('✓ Inspeção APROVADA');
-  refreshAll();
-}
-
-function rejectInspection(id) {
-  const obs = document.getElementById('approvalObs')?.value.trim();
-  if (!obs) {
-    showToast('⚠️ Informe a observação (o que o colaborador deve corrigir)');
-    document.getElementById('approvalObs')?.focus();
-    return;
-  }
-  if (!confirm('Reprovar esta inspeção e devolvê-la ao colaborador para correção?')) return;
-
-  const insps = getInspections();
-  const idx = insps.findIndex(x => x.id === id);
-  if (idx === -1) return;
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  
-  insps[idx].status = 'REPROVADO';
-  insps[idx].aprovacaoSupervisor = {
-    aprovado: false,
-    supervisor: settings.supervisorName,
-    data: new Date().toISOString(),
-    observacao: obs
-  };
-  saveInspections(insps);
-  closeModal('modalInspection');
-  showToast('✗ Inspeção REPROVADA — devolvida ao colaborador');
-  refreshAll();
-  
-  // Auto-open email to notify
-  setTimeout(() => emailColaborador(id, true), 500);
-}
-
-function resetApproval(id) {
-  if (!confirm('Remover aprovação/reprovação e voltar ao status PENDENTE?')) return;
-  const insps = getInspections();
-  const idx = insps.findIndex(x => x.id === id);
-  if (idx === -1) return;
-  insps[idx].status = 'PENDENTE';
-  insps[idx].aprovacaoSupervisor = null;
-  saveInspections(insps);
-  showToast('↺ Status resetado para PENDENTE');
-  openInspection(id);
-  refreshAll();
-}
-
-function emailColaborador(id, autoFromReject = false) {
-  const insps = getInspections();
-  const i = insps.find(x => x.id === id);
-  if (!i) return;
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  
-  let subject, body;
-  const a = i.aprovacaoSupervisor;
-  
-  if (a && a.aprovado) {
-    subject = `[COTESA] ✓ Inspeção APROVADA — ${i.dados.placa}`;
-    body = `Olá ${i.dados.nomeCondutor},\n\nSua inspeção do veículo ${i.dados.placa} realizada em ${formatDate(i.dados.dataInspecao)} foi APROVADA pelo supervisor.\n\n`;
-    if (a.observacao) body += `Observação do supervisor:\n${a.observacao}\n\n`;
-    body += `ID da Inspeção: ${i.id}\n\nAtenciosamente,\n${settings.supervisorName}\nCOTESA Engenharia`;
-  } else if (a && !a.aprovado) {
-    subject = `[COTESA] ⚠️ Inspeção DEVOLVIDA — Requer Correção — ${i.dados.placa}`;
-    body = `Olá ${i.dados.nomeCondutor},\n\nSua inspeção do veículo ${i.dados.placa} realizada em ${formatDate(i.dados.dataInspecao)} foi REPROVADA e precisa ser CORRIGIDA.\n\n`;
-    body += `=== MOTIVO / CORREÇÕES NECESSÁRIAS ===\n${a.observacao}\n\n`;
-    body += `=== ITENS NÃO CONFORMES ===\n`;
-    (i.items || []).filter(it => it.resposta === 'N').forEach(it => {
-      body += `\n• Item ${it.num}: ${it.text.substring(0, 120)}...\n`;
-      if (it.observacao) body += `  Obs: ${it.observacao}\n`;
-    });
-    body += `\n\nPor favor, corrija os itens apontados e realize uma nova inspeção.\n\n`;
-    body += `ID da Inspeção: ${i.id}\n\nAtenciosamente,\n${settings.supervisorName}\nCOTESA Engenharia`;
-  } else {
-    subject = `[COTESA] Inspeção ${i.dados.placa} — ${formatDate(i.dados.dataInspecao)}`;
-    body = `Olá ${i.dados.nomeCondutor},\n\nReferente à inspeção do veículo ${i.dados.placa} realizada em ${formatDate(i.dados.dataInspecao)}.\n\nID: ${i.id}\n\nAtenciosamente,\n${settings.supervisorName}\nCOTESA Engenharia`;
-  }
-
-  const mailto = `mailto:${i.dados.emailResponsavel}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.location.href = mailto;
-}
-
-// ==================== PHOTO VIEWER ====================
-function viewPhoto(src) {
-  const w = window.open();
-  w.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${src}" style="max-width:100%;max-height:100vh"></body>`);
-}
-
-// ==================== COLLABORATORS ====================
-function renderCollaborators() {
-  const collabs = getCollaborators();
-  const search = document.getElementById('searchCollab').value.toLowerCase();
-  const filtered = collabs.filter(c =>
-    !search ||
-    (c.nome || '').toLowerCase().includes(search) ||
-    (c.matricula || '').toLowerCase().includes(search) ||
-    (c.email || '').toLowerCase().includes(search)
-  );
-
-  const list = document.getElementById('collabList');
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-      <div class="empty-icon">👥</div>
-      <div class="empty-title">${collabs.length === 0 ? 'Nenhum colaborador cadastrado' : 'Nenhum colaborador encontrado'}</div>
-      <div class="empty-sub">Adicione sua equipe clicando em "Novo Colaborador"</div></div>`;
-    return;
-  }
-
-  list.innerHTML = filtered.map(c => {
-    const initials = (c.nome || '').split(' ').filter(Boolean).slice(0, 2).map(n => n[0]).join('').toUpperCase();
-    return `
-      <div class="collab-card">
-        <div class="collab-avatar">${initials}</div>
-        <div class="collab-info">
-          <div class="collab-name">${c.nome}</div>
-          <div class="collab-meta">
-            ${c.funcao ? `<div>💼 ${c.funcao}</div>` : ''}
-            ${c.matricula ? `<div>🆔 ${c.matricula}</div>` : ''}
-            <div>📧 ${c.email}</div>
+        <div class="item-controls">
+          <div class="radio-group">
+            <label class="radio-btn c-btn"><input type="radio" name="r_${item.id}" value="C" onchange="onRC('${item.id}','C')"> ✓ Conforme</label>
+            <label class="radio-btn n-btn"><input type="radio" name="r_${item.id}" value="N" onchange="onRC('${item.id}','N')"> ✗ N/C</label>
+            <label class="radio-btn a-btn"><input type="radio" name="r_${item.id}" value="A" onchange="onRC('${item.id}','A')"> N/A</label>
+          </div>
+          <div class="photo-upload">
+            <button class="photo-btn" onclick="trigP('${item.id}')">📷 Foto</button>
+            <input class="photo-input" type="file" id="pi_${item.id}" accept="image/*" multiple onchange="handleP('${item.id}',this)">
           </div>
         </div>
-        <div class="collab-actions">
-          <button class="icon-btn" onclick="editCollab('${c.id}')" title="Editar">✏️</button>
-          <button class="icon-btn danger" onclick="deleteCollab('${c.id}')" title="Remover">🗑️</button>
-        </div>
-      </div>
-    `;
-  }).join('');
+        <div class="photo-strip" id="ps_${item.id}"></div>
+        <div class="nc-obs" id="obs_${item.id}">
+          <textarea placeholder="Descreva a não conformidade encontrada..." oninput="resp['${item.id}_obs']=this.value"></textarea>
+        </div>`;
+      body.appendChild(d);
+    });
+  });
 }
 
-function openCollabModal() {
-  document.getElementById('modalCollabTitle').textContent = 'Novo Colaborador';
-  document.getElementById('collabEditId').value = '';
-  document.getElementById('collabNome').value = '';
-  document.getElementById('collabMatricula').value = '';
-  document.getElementById('collabEmail').value = '';
-  document.getElementById('collabFuncao').value = '';
-  document.getElementById('collabCNH').value = '';
-  document.getElementById('collabValCNH').value = '';
-  document.getElementById('modalCollab').classList.add('active');
+function trigP(id){document.getElementById('pi_'+id).click();}
+function handleP(id,inp){
+  if(!photos[id])photos[id]=[];
+  Array.from(inp.files).forEach(f=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        const c=document.createElement('canvas'),ms=800;
+        let w=img.width,h=img.height;
+        if(w>ms||h>ms){if(w>h){h=h*ms/w;w=ms;}else{w=w*ms/h;h=ms;}}
+        c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
+        photos[id].push(c.toDataURL('image/jpeg',.7));
+        renderP(id);
+      };img.src=e.target.result;
+    };r.readAsDataURL(f);
+  });inp.value='';
+}
+function renderP(id){
+  const s=document.getElementById('ps_'+id);s.innerHTML='';
+  (photos[id]||[]).forEach((src,i)=>{
+    const w=document.createElement('div');w.className='photo-wrap';
+    w.innerHTML=`<img class="photo-thumb" src="${src}" onclick="viewP('${src}')"><button class="photo-rm" onclick="event.stopPropagation();rmP('${id}',${i})">×</button>`;
+    s.appendChild(w);
+  });
+}
+function rmP(id,i){photos[id].splice(i,1);renderP(id);}
+function viewP(src){const w=window.open();w.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${src}" style="max-width:100%;max-height:100vh"></body>`);}
+function onRC(id,val){
+  resp[id]=val;
+  const w=document.getElementById('iw-'+id),o=document.getElementById('obs_'+id);
+  w.className='checklist-item '+(val==='C'?'conform':val==='N'?'nconform':'na');
+  o.className='nc-obs'+(val==='N'?' show':'');
 }
 
-function editCollab(id) {
-  const c = getCollaborators().find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('modalCollabTitle').textContent = 'Editar Colaborador';
-  document.getElementById('collabEditId').value = id;
-  document.getElementById('collabNome').value = c.nome || '';
-  document.getElementById('collabMatricula').value = c.matricula || '';
-  document.getElementById('collabEmail').value = c.email || '';
-  document.getElementById('collabFuncao').value = c.funcao || '';
-  document.getElementById('collabCNH').value = c.cnh || '';
-  document.getElementById('collabValCNH').value = c.validadeCNH || '';
-  document.getElementById('modalCollab').classList.add('active');
+function updateNav(){
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===step));
+  document.querySelectorAll('.step-pill').forEach((p,i)=>{p.classList.remove('active','done');if(i<step)p.classList.add('done');if(i===step)p.classList.add('active');});
+  const last=step===2;
+  document.getElementById('btnPrev').style.display=(step>0&&!saved)?'':'none';
+  document.getElementById('btnNext').style.display=(!last&&!saved)?'':'none';
+  document.getElementById('btnSubmit').style.display=(last&&!saved)?'':'none';
+  document.getElementById('bottomBar').style.display=saved?'none':'';
+  document.getElementById('pageIndicator').textContent=`Passo ${step+1} / 3`;
+  document.getElementById('progressBar').style.width=((step+1)/3*100)+'%';
+  if(step===2)buildSummary();
 }
 
-function saveCollaborator() {
-  const nome = document.getElementById('collabNome').value.trim();
-  const matricula = document.getElementById('collabMatricula').value.trim();
-  const email = document.getElementById('collabEmail').value.trim();
-  
-  if (!nome || !matricula || !email) {
-    showToast('⚠️ Preencha nome, matrícula e e-mail');
-    return;
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    showToast('⚠️ E-mail inválido');
-    return;
-  }
+function nextStep(){if(!validate())return;step++;updateNav();window.scrollTo(0,0);}
+function prevStep(){step--;updateNav();window.scrollTo(0,0);}
 
-  const editId = document.getElementById('collabEditId').value;
-  const collabs = getCollaborators();
-  const data = {
-    id: editId || ('COL-' + Date.now()),
-    nome,
-    matricula,
-    email,
-    funcao: document.getElementById('collabFuncao').value,
-    cnh: document.getElementById('collabCNH').value,
-    validadeCNH: document.getElementById('collabValCNH').value,
-  };
-
-  if (editId) {
-    const idx = collabs.findIndex(c => c.id === editId);
-    collabs[idx] = data;
-  } else {
-    collabs.push(data);
-  }
-  saveCollaborators(collabs);
-  closeModal('modalCollab');
-  showToast(editId ? '✓ Colaborador atualizado' : '✓ Colaborador adicionado');
-  refreshAll();
-}
-
-function deleteCollab(id) {
-  if (!confirm('Remover este colaborador?')) return;
-  saveCollaborators(getCollaborators().filter(c => c.id !== id));
-  showToast('✓ Colaborador removido');
-  refreshAll();
-}
-
-// ==================== SETTINGS ====================
-function saveSettings() {
-  const settings = JSON.parse(localStorage.getItem(K_SETTINGS));
-  const newName = document.getElementById('cfgSupervisorName').value.trim();
-  const newEmail = document.getElementById('cfgSupervisorEmail').value.trim();
-  const newPass = document.getElementById('cfgNewPass').value;
-
-  if (newName) settings.supervisorName = newName;
-  if (newEmail) settings.supervisorEmail = newEmail;
-  if (newPass) {
-    if (newPass.length < 6) { showToast('⚠️ Senha mínima 6 caracteres'); return; }
-    settings.password = newPass;
-  }
-  localStorage.setItem(K_SETTINGS, JSON.stringify(settings));
-  document.getElementById('cfgNewPass').value = '';
-  document.getElementById('userBadge').textContent = '👤 ' + settings.supervisorName;
-  showToast('✓ Configurações salvas');
-}
-
-// ==================== IMPORT / EXPORT ====================
-function importInspections() {
-  document.getElementById('importFile').click();
-}
-function handleImport(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      const arr = Array.isArray(data) ? data : [data];
-      const existing = getInspections();
-      const existingIds = new Set(existing.map(i => i.id));
-      let added = 0, updated = 0;
-      arr.forEach(item => {
-        if (!item.id) item.id = 'INS-' + Date.now() + Math.random();
-        if (existingIds.has(item.id)) {
-          const idx = existing.findIndex(x => x.id === item.id);
-          existing[idx] = item;
-          updated++;
-        } else {
-          existing.push(item);
-          added++;
-        }
-      });
-      saveInspections(existing);
-      showToast(`✓ ${added} adicionadas, ${updated} atualizadas`);
-      refreshAll();
-    } catch(err) {
-      showToast('⚠️ Arquivo inválido: ' + err.message);
+function validate(){
+  if(step===0){
+    const req=['dataInspecao','placa','nomeCondutor','matricula','emailResponsavel','tipoVeiculo'];
+    for(const f of req){
+      const el=document.getElementById(f);
+      if(!el.value.trim()){toast('⚠️ Preencha todos os campos obrigatórios (*)');el.focus();return false;}
     }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
-function exportInspections() {
-  const data = getInspections();
-  if (data.length === 0) { showToast('⚠️ Sem dados para exportar'); return; }
-  downloadJSON(data, `COTESA_Inspecoes_${new Date().toISOString().slice(0,10)}.json`);
-  showToast('✓ ' + data.length + ' inspeções exportadas');
-}
-function exportCollaborators() {
-  const data = getCollaborators();
-  if (data.length === 0) { showToast('⚠️ Sem colaboradores para exportar'); return; }
-  downloadJSON(data, `COTESA_Colaboradores_${new Date().toISOString().slice(0,10)}.json`);
-  showToast('✓ ' + data.length + ' colaboradores exportados');
-}
-function downloadJSON(data, filename) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(a.href);
-}
-
-function clearAllData() {
-  if (!confirm('⚠️ ATENÇÃO: Isso apagará TODAS as inspeções e colaboradores. Continuar?')) return;
-  if (!confirm('Tem certeza absoluta? Esta ação é IRREVERSÍVEL.')) return;
-  localStorage.removeItem(K_INSPECTIONS);
-  localStorage.removeItem(K_COLLABORATORS);
-  showToast('✓ Dados apagados');
-  refreshAll();
-}
-
-// ==================== PDF GENERATION ====================
-async function generateInspectionPDF(id) {
-  showToast('📄 Gerando PDF...', 2000);
-  const data = getInspections().find(i => i.id === id);
-  if (!data) return;
-
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const pageW = 210, pageH = 297;
-    const margin = 12;
-    let y = margin;
-
-    // HEADER
-    doc.setFillColor(10, 22, 40);
-    doc.rect(0, 0, pageW, 28, 'F');
-    doc.setFillColor(242, 101, 34);
-    doc.rect(0, 28, pageW, 3, 'F');
-    
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(255, 255, 255);
-    doc.text('COTESA', margin, 16);
-    doc.setFontSize(11);
-    doc.text('RELATÓRIO DE INSPEÇÃO DE VEÍCULO', margin + 32, 13);
-    doc.setFontSize(9);
-    doc.setTextColor(242, 101, 34);
-    doc.text('PRO-039864 · Rev.: 03 · Contrato 3050 Vale', margin + 32, 19);
-    doc.setTextColor(200, 200, 200);
-    doc.setFontSize(8);
-    doc.text(`ID: ${data.id}`, pageW - margin, 16, { align: 'right' });
-    doc.setFontSize(7);
-    doc.text(new Date(data.timestamp).toLocaleString('pt-BR'), pageW - margin, 22, { align: 'right' });
-
-    y = 38;
-
-    // Status
-    const statusColor = data.status === 'APROVADO' ? [34, 197, 94] : data.status === 'REPROVADO' ? [239, 68, 68] : [234, 179, 8];
-    doc.setFillColor(...statusColor);
-    doc.rect(margin, y, pageW - 2*margin, 8, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('STATUS: ' + data.status, pageW/2, y + 5.5, { align: 'center' });
-    y += 12;
-
-    const drawSectionHeader = (title) => {
-      if (y + 10 > pageH - 20) { doc.addPage(); y = margin; }
-      doc.setFillColor(10, 22, 40);
-      doc.rect(margin, y, pageW - 2*margin, 6, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(title, margin + 2, y + 4);
-      y += 8;
-    };
-
-    const addRow = (label1, val1, label2, val2) => {
-      doc.setFillColor(244, 246, 249);
-      doc.rect(margin, y, pageW - 2*margin, 6, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(10, 22, 40);
-      doc.setFontSize(9);
-      doc.text(label1 + ':', margin + 2, y + 4);
-      doc.setFont('helvetica', 'normal');
-      doc.text(String(val1 || '-'), margin + 32, y + 4);
-      if (label2) {
-        doc.setFont('helvetica', 'bold');
-        doc.text(label2 + ':', pageW/2 + 2, y + 4);
-        doc.setFont('helvetica', 'normal');
-        doc.text(String(val2 || '-'), pageW/2 + 32, y + 4);
-      }
-      y += 6;
-    };
-
-    drawSectionHeader('1. DADOS DA INSPECAO');
-    addRow('Data', formatDate(data.dados.dataInspecao), 'Hora', data.dados.horaInspecao);
-    addRow('Empresa', data.dados.empresa, 'Gerência', data.dados.gerencia);
-    addRow('Placa', data.dados.placa, 'Tipo', data.dados.tipoVeiculo);
-    addRow('Modelo', data.dados.modelo, 'Ano', data.dados.ano);
-    addRow('Km Atual', data.dados.km, '', '');
-    y += 4;
-
-    drawSectionHeader('2. RESPONSAVEL PELA INSPECAO');
-    addRow('Nome', data.dados.nomeCondutor, 'Matrícula', data.dados.matricula);
-    addRow('Função', data.dados.funcao, 'E-mail', data.dados.emailResponsavel);
-    addRow('CNH', data.dados.cnh, 'Validade', formatDate(data.dados.validadeCNH));
-    y += 4;
-
-    drawSectionHeader('3. RESUMO DA AVALIACAO');
-    y += 2;
-    const boxW = (pageW - 2*margin - 9) / 4;
-    const drawStatBox = (x, num, label, color) => {
-      doc.setFillColor(244, 246, 249);
-      doc.rect(x, y, boxW, 16, 'F');
-      doc.setFillColor(...color);
-      doc.rect(x, y, boxW, 2, 'F');
-      doc.setTextColor(...color);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(18);
-      doc.text(String(num), x + boxW/2, y + 10, { align: 'center' });
-      doc.setTextColor(100, 116, 139);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(label, x + boxW/2, y + 14, { align: 'center' });
-    };
-    drawStatBox(margin, data.resumo.conforme, 'CONFORME', [34, 197, 94]);
-    drawStatBox(margin + boxW + 3, data.resumo.naoConforme, 'NÃO CONFORME', [239, 68, 68]);
-    drawStatBox(margin + 2*(boxW + 3), data.resumo.naoAplicavel, 'NÃO APLICÁVEL', [100, 116, 139]);
-    drawStatBox(margin + 3*(boxW + 3), data.resumo.total, 'TOTAL ITENS', [10, 22, 40]);
-    y += 20;
-
-    drawSectionHeader('4. ITENS DO CHECKLIST');
-    for (const item of data.items || []) {
-      const neededH = 14 + (item.observacao ? 10 : 0) + (item.photos && item.photos.length > 0 ? 32 : 0);
-      if (y + neededH > pageH - 20) { doc.addPage(); y = margin; }
-
-      const respColor = item.resposta === 'C' ? [34, 197, 94] : item.resposta === 'N' ? [239, 68, 68] : [100, 116, 139];
-      const respText = item.resposta === 'C' ? 'CONFORME' : item.resposta === 'N' ? 'NÃO CONFORME' : 'N/A';
-
-      doc.setDrawColor(226, 232, 240);
-      doc.setLineWidth(0.3);
-      doc.rect(margin, y, pageW - 2*margin, 12);
-      doc.setFillColor(10, 22, 40);
-      doc.rect(margin, y, 8, 12, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(String(item.num), margin + 4, y + 8, { align: 'center' });
-
-      doc.setFillColor(...respColor);
-      doc.rect(pageW - margin - 28, y + 1, 26, 10, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(7);
-      doc.text(respText, pageW - margin - 15, y + 7, { align: 'center' });
-
-      doc.setTextColor(10, 22, 40);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(8);
-      const textLines = doc.splitTextToSize(item.text, pageW - 2*margin - 42);
-      doc.text(textLines.slice(0, 2), margin + 10, y + 5);
-      y += 14;
-
-      if (item.observacao) {
-        doc.setFillColor(254, 226, 226);
-        doc.rect(margin, y, pageW - 2*margin, 8, 'F');
-        doc.setTextColor(220, 38, 38);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(7);
-        doc.text('OBS:', margin + 2, y + 5);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(10, 22, 40);
-        const obsLines = doc.splitTextToSize(item.observacao, pageW - 2*margin - 18);
-        doc.text(obsLines.slice(0, 1), margin + 14, y + 5);
-        y += 10;
-      }
-
-      if (item.photos && item.photos.length > 0) {
-        if (y + 32 > pageH - 20) { doc.addPage(); y = margin; }
-        const photoW = 35, photoH = 28;
-        let px = margin;
-        for (let i = 0; i < Math.min(item.photos.length, 4); i++) {
-          try {
-            doc.addImage(item.photos[i], 'JPEG', px, y, photoW, photoH);
-            doc.setDrawColor(242, 101, 34);
-            doc.setLineWidth(0.5);
-            doc.rect(px, y, photoW, photoH);
-            px += photoW + 3;
-          } catch(e) { console.error(e); }
-        }
-        y += photoH + 3;
-      }
-      y += 2;
-    }
-
-    if (data.obsGerais) {
-      drawSectionHeader('5. OBSERVACOES GERAIS');
-      doc.setTextColor(10, 22, 40);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
-      const obsGLines = doc.splitTextToSize(data.obsGerais, pageW - 2*margin - 4);
-      doc.text(obsGLines, margin + 2, y + 2);
-      y += obsGLines.length * 4 + 6;
-    }
-
-    // DECLARAÇÃO E APROVAÇÃO
-    if (y + 44 > pageH - 20) { doc.addPage(); y = margin; }
-    drawSectionHeader('6. DECLARACAO E APROVACAO');
-
-    doc.setTextColor(100, 116, 139);
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(8);
-    const decl = 'Declaro que realizei a inspeção pré-uso do veículo informado e que todos os itens foram avaliados conforme os procedimentos COTESA/Vale (PRO-039864).';
-    const dLines = doc.splitTextToSize(decl, pageW - 2*margin - 4);
-    doc.text(dLines, margin + 2, y);
-    y += dLines.length * 4 + 6;
-
-    // Caixa responsável
-    doc.setDrawColor(10, 22, 40); doc.setLineWidth(0.3);
-    doc.rect(margin, y, 80, 28);
-    doc.setFillColor(244, 246, 249); doc.rect(margin, y, 80, 6, 'F');
-    doc.setTextColor(10, 22, 40); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-    doc.text('RESPONSÁVEL PELA INSPEÇÃO', margin + 40, y + 4, { align: 'center' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(100, 116, 139);
-    doc.text(data.dados.nomeCondutor || '-', margin + 40, y + 13, { align: 'center' });
-    doc.text('Mat: ' + (data.dados.matricula || '-'), margin + 40, y + 18, { align: 'center' });
-    doc.line(margin + 5, y + 24, margin + 75, y + 24);
-    doc.text('Assinatura', margin + 40, y + 27, { align: 'center' });
-
-    // Caixa supervisor
-    const a = data.aprovacaoSupervisor;
-    const supCol = a ? (a.aprovado ? [34, 197, 94] : [239, 68, 68]) : [234, 179, 8];
-    const supTxt = a ? (a.aprovado ? 'APROVADO PELO SUPERVISOR' : 'REPROVADO') : 'PENDENTE DE APROVACAO';
-    doc.setDrawColor(226, 232, 240);
-    doc.rect(pageW - margin - 80, y, 80, 28);
-    doc.setFillColor(...supCol);
-    doc.rect(pageW - margin - 80, y, 80, 6, 'F');
-    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(8);
-    doc.text(supTxt, pageW - margin - 40, y + 4, { align: 'center' });
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(100, 116, 139);
-    if (a) {
-      doc.text(a.supervisor || '-', pageW - margin - 40, y + 13, { align: 'center' });
-      doc.text(new Date(a.data).toLocaleString('pt-BR'), pageW - margin - 40, y + 18, { align: 'center' });
-      if (a.observacao) {
-        const obsL = doc.splitTextToSize('Obs: ' + a.observacao, 74);
-        doc.text(obsL.slice(0, 1), pageW - margin - 40, y + 23, { align: 'center' });
-      }
-    } else {
-      doc.text('Aguardando análise', pageW - margin - 40, y + 16, { align: 'center' });
-      doc.line(pageW - margin - 75, y + 24, pageW - margin - 5, y + 24);
-      doc.text('Assinatura Supervisor', pageW - margin - 40, y + 27, { align: 'center' });
-    }
-
-    // FOOTER on all pages
-    const totalPages = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= totalPages; p++) {
-      doc.setPage(p);
-      doc.setFillColor(10, 22, 40);
-      doc.rect(0, pageH - 8, pageW, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
-      doc.text('COTESA ENGENHARIA · Contrato 3050 Vale · Uso Interno', margin, pageH - 3);
-      doc.text(`Pág. ${p}/${totalPages}`, pageW - margin, pageH - 3, { align: 'right' });
-    }
-
-    doc.save(`Inspecao_${data.dados.placa}_${data.dados.dataInspecao}.pdf`);
-    showToast('✓ PDF gerado e salvo!');
-  } catch(err) {
-    console.error('PDF error:', err);
-    showToast('⚠️ Erro ao gerar PDF: ' + err.message);
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('emailResponsavel').value)){toast('⚠️ E-mail inválido');return false;}
   }
+  if(step===1){
+    const ids=CHECKLIST.flatMap(g=>g.items.map(i=>i.id));
+    const miss=ids.filter(id=>!resp[id]);
+    if(miss.length){toast(`⚠️ ${miss.length} item(ns) sem avaliação`);document.getElementById('iw-'+miss[0])?.scrollIntoView({behavior:'smooth',block:'center'});return false;}
+  }
+  return true;
 }
 
-async function exportConsolidatedPDF() {
-  const insps = getInspections();
-  if (insps.length === 0) { showToast('⚠️ Sem inspeções'); return; }
-  showToast('📄 Gerando relatório consolidado...', 2000);
+function buildSummary(){
+  const all=CHECKLIST.flatMap(g=>g.items);
+  const c=all.filter(i=>resp[i.id]==='C').length,n=all.filter(i=>resp[i.id]==='N').length,a=all.filter(i=>resp[i.id]==='A').length;
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat-box"><div class="stat-num" style="color:var(--green)">${c}</div><div class="stat-label">Conforme</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--red)">${n}</div><div class="stat-label">N/Conforme</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--gray-dark)">${a}</div><div class="stat-label">N/A</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:var(--navy)">${all.length}</div><div class="stat-label">Total</div></div>`;
+  const nc=all.filter(i=>resp[i.id]==='N');
+  document.getElementById('summaryWrap').innerHTML=nc.length?`
+    <p style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:8px;">⚠️ ${nc.length} item(ns) não conforme(s):</p>
+    <table class="summary-table"><thead><tr><th>#</th><th>Item</th><th>Observação</th></tr></thead><tbody>
+    ${nc.map(i=>`<tr><td><strong>${i.num}</strong></td><td>${i.text.substring(0,80)}…</td><td>${resp[i.id+'_obs']||'—'}</td></tr>`).join('')}
+    </tbody></table>`:
+    `<div style="text-align:center;padding:24px;color:var(--green);font-weight:600;background:rgba(34,197,94,.08);border-radius:10px;">✅ Todos os itens conformes — Veículo APROVADO para uso</div>`;
+}
 
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const pageW = 210, pageH = 297, margin = 12;
-    let y = margin;
+function submitInspection(){
+  inspId=saveLS();saved=true;
+  document.getElementById('cardRevisao').style.display='none';
+  document.getElementById('cardConclusao').style.display='block';
+  document.getElementById('bottomBar').style.display='none';
+  document.getElementById('progressBar').style.width='100%';
+  document.querySelectorAll('.step-pill').forEach(p=>{p.classList.remove('active');p.classList.add('done');});
+  document.getElementById('pageIndicator').textContent='Concluído ✓';
+  window.scrollTo(0,0);
+  toast('✓ Inspeção salva com sucesso!');
+}
 
+function getData(){
+  const all=CHECKLIST.flatMap(g=>g.items);
+  const items=all.map(i=>({id:i.id,num:i.num,text:i.text,crit:i.crit,resposta:resp[i.id]||null,observacao:resp[i.id+'_obs']||'',photos:photos[i.id]||[]}));
+  return{id:'INS-'+Date.now(),timestamp:new Date().toISOString(),status:'PENDENTE',
+    dados:{dataInspecao:document.getElementById('dataInspecao').value,horaInspecao:document.getElementById('horaInspecao').value,
+      gerencia:document.getElementById('gerencia').value,empresa:'COTESA ENGENHARIA',
+      tipoVeiculo:document.getElementById('tipoVeiculo').value,placa:document.getElementById('placa').value.toUpperCase(),
+      modelo:document.getElementById('modelo').value,ano:document.getElementById('ano').value,km:document.getElementById('km').value,
+      nomeCondutor:document.getElementById('nomeCondutor').value,matricula:document.getElementById('matricula').value,
+      emailResponsavel:document.getElementById('emailResponsavel').value,funcao:document.getElementById('funcao').value,
+      cnh:document.getElementById('cnh').value,validadeCNH:document.getElementById('validadeCNH').value},
+    items,obsGerais:document.getElementById('obsGerais').value,
+    resumo:{conforme:items.filter(i=>i.resposta==='C').length,naoConforme:items.filter(i=>i.resposta==='N').length,naoAplicavel:items.filter(i=>i.resposta==='A').length,total:items.length},
+    aprovacaoSupervisor:null};
+}
+
+function saveLS(){
+  const d=getData(),all=JSON.parse(localStorage.getItem(SK)||'[]');
+  all.push(d);localStorage.setItem(SK,JSON.stringify(all));return d.id;
+}
+
+function novaInspecao(){
+  if(!confirm('Iniciar nova inspeção? Os dados atuais já estão salvos.'))return;
+  resp={};photos={};step=0;inspId=null;saved=false;
+  const n=new Date();
+  document.getElementById('dataInspecao').value=n.toISOString().slice(0,10);
+  document.getElementById('horaInspecao').value=n.toTimeString().slice(0,5);
+  ['placa','modelo','ano','km','nomeCondutor','matricula','emailResponsavel','cnh','validadeCNH','obsGerais'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('tipoVeiculo').value='';
+  document.getElementById('funcao').value='';
+  buildChecklist();
+  document.getElementById('cardRevisao').style.display='block';
+  document.getElementById('cardConclusao').style.display='none';
+  updateNav();
+  window.scrollTo(0,0);
+  toast('✓ Formulário limpo — nova inspeção');
+}
+
+function fmtDate(d){if(!d)return'-';const p=d.split('-');return p.length===3?`${p[2]}/${p[1]}/${p[0]}`:d;}
+
+async function gerarPDF(){
+  if(!inspId){toast('⚠️ Salve a inspeção primeiro');return;}
+  toast('📄 Gerando PDF...',3000);
+  const data=JSON.parse(localStorage.getItem(SK)||'[]').find(i=>i.id===inspId);
+  if(!data){toast('⚠️ Dados não encontrados');return;}
+  try{
+    const{jsPDF}=window.jspdf;
+    const doc=new jsPDF({unit:'mm',format:'a4'});
+    const W=210,H=297,M=12;let y=M;
     // Header
-    doc.setFillColor(10, 22, 40);
-    doc.rect(0, 0, pageW, 32, 'F');
-    doc.setFillColor(242, 101, 34);
-    doc.rect(0, 32, pageW, 3, 'F');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.setTextColor(255, 255, 255);
-    doc.text('COTESA', margin, 18);
-    doc.setFontSize(13);
-    doc.text('RELATÓRIO CONSOLIDADO DE INSPEÇÕES', margin + 40, 14);
-    doc.setFontSize(9);
-    doc.setTextColor(242, 101, 34);
-    doc.text('PRO-039864 · Contrato 3050 Vale', margin + 40, 21);
-    doc.setTextColor(200, 200, 200);
-    doc.setFontSize(8);
-    doc.text('Gerado em: ' + new Date().toLocaleString('pt-BR'), margin + 40, 27);
-    y = 42;
-
-    // Estatísticas gerais
-    const pending = insps.filter(i => i.status === 'PENDENTE').length;
-    const approved = insps.filter(i => i.status === 'APROVADO').length;
-    const rejected = insps.filter(i => i.status === 'REPROVADO').length;
-
-    doc.setFillColor(10, 22, 40);
-    doc.rect(margin, y, pageW - 2*margin, 6, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('RESUMO GERAL', margin + 2, y + 4);
-    y += 10;
-
-    const boxW = (pageW - 2*margin - 9) / 4;
-    const drawStat = (x, num, lbl, col) => {
-      doc.setFillColor(244, 246, 249);
-      doc.rect(x, y, boxW, 18, 'F');
-      doc.setFillColor(...col);
-      doc.rect(x, y, boxW, 2, 'F');
-      doc.setTextColor(...col);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(20);
-      doc.text(String(num), x + boxW/2, y + 11, { align: 'center' });
-      doc.setTextColor(100, 116, 139);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(lbl, x + boxW/2, y + 16, { align: 'center' });
-    };
-    drawStat(margin, insps.length, 'TOTAL', [10, 22, 40]);
-    drawStat(margin + boxW + 3, pending, 'PENDENTES', [234, 179, 8]);
-    drawStat(margin + 2*(boxW+3), approved, 'APROVADAS', [34, 197, 94]);
-    drawStat(margin + 3*(boxW+3), rejected, 'REPROVADAS', [239, 68, 68]);
-    y += 22;
-
-    // Tabela
-    doc.setFillColor(10, 22, 40);
-    doc.rect(margin, y, pageW - 2*margin, 6, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(10);
-    doc.text('LISTAGEM DE INSPEÇÕES', margin + 2, y + 4);
-    y += 8;
-
-    // Table header
-    doc.setFillColor(226, 232, 240);
-    doc.rect(margin, y, pageW - 2*margin, 6, 'F');
-    doc.setTextColor(10, 22, 40);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.text('DATA', margin + 2, y + 4);
-    doc.text('PLACA', margin + 26, y + 4);
-    doc.text('CONDUTOR', margin + 50, y + 4);
-    doc.text('C', margin + 116, y + 4);
-    doc.text('NC', margin + 124, y + 4);
-    doc.text('NA', margin + 134, y + 4);
-    doc.text('STATUS', margin + 148, y + 4);
-    y += 7;
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    const sorted = [...insps].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-    for (const i of sorted) {
-      if (y + 6 > pageH - 15) {
-        doc.addPage();
-        y = margin;
+    doc.setFillColor(10,22,40);doc.rect(0,0,W,28,'F');
+    doc.setFillColor(242,101,34);doc.rect(0,28,W,3,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(20);doc.setTextColor(255,255,255);
+    doc.text('COTESA',M,16);
+    doc.setFontSize(11);doc.text('RELATORIO DE INSPECAO DE VEICULO',M+32,13);
+    doc.setFontSize(9);doc.setTextColor(242,101,34);
+    doc.text('PRO-039864 Rev.03 - Contrato 3050 Vale',M+32,19);
+    doc.setTextColor(200,200,200);doc.setFontSize(7);
+    doc.text('ID: '+data.id,W-M,16,{align:'right'});
+    doc.text(new Date(data.timestamp).toLocaleString('pt-BR'),W-M,22,{align:'right'});
+    y=38;
+    // Status
+    const ncN=data.resumo.naoConforme;
+    doc.setFillColor(...(ncN>0?[239,68,68]:[34,197,94]));
+    doc.rect(M,y,W-2*M,8,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+    doc.text(ncN>0?`ATENCAO: ${ncN} ITEM(NS) NAO CONFORME(S)`:'APROVADO - TODOS OS ITENS CONFORMES',W/2,y+5.5,{align:'center'});
+    y+=12;
+    const SH=(t)=>{if(y+10>H-M){doc.addPage();y=M;}doc.setFillColor(10,22,40);doc.rect(M,y,W-2*M,6,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(t,M+2,y+4);y+=8;};
+    const AR=(l1,v1,l2,v2)=>{doc.setFillColor(244,246,249);doc.rect(M,y,W-2*M,6,'F');doc.setFont('helvetica','bold');doc.setTextColor(10,22,40);doc.setFontSize(9);doc.text(l1+':',M+2,y+4);doc.setFont('helvetica','normal');doc.text(String(v1||'-'),M+32,y+4);if(l2){doc.setFont('helvetica','bold');doc.text(l2+':',W/2+2,y+4);doc.setFont('helvetica','normal');doc.text(String(v2||'-'),W/2+32,y+4);}y+=6;};
+    SH('1. DADOS DA INSPECAO');
+    AR('Data',fmtDate(data.dados.dataInspecao),'Hora',data.dados.horaInspecao);
+    AR('Empresa',data.dados.empresa,'Gerencia',data.dados.gerencia);
+    AR('Placa',data.dados.placa,'Tipo',data.dados.tipoVeiculo);
+    AR('Modelo',data.dados.modelo,'Ano',data.dados.ano);
+    AR('Km Atual',data.dados.km,'','');y+=4;
+    SH('2. RESPONSAVEL PELA INSPECAO');
+    AR('Nome',data.dados.nomeCondutor,'Matricula',data.dados.matricula);
+    AR('Funcao',data.dados.funcao,'Email',data.dados.emailResponsavel);
+    AR('CNH',data.dados.cnh,'Validade',fmtDate(data.dados.validadeCNH));y+=4;
+    SH('3. RESUMO');y+=2;
+    const bW=(W-2*M-9)/4;
+    const DS=(x,num,lbl,col)=>{doc.setFillColor(244,246,249);doc.rect(x,y,bW,16,'F');doc.setFillColor(...col);doc.rect(x,y,bW,2,'F');doc.setTextColor(...col);doc.setFont('helvetica','bold');doc.setFontSize(18);doc.text(String(num),x+bW/2,y+10,{align:'center'});doc.setTextColor(100,116,139);doc.setFontSize(7);doc.setFont('helvetica','normal');doc.text(lbl,x+bW/2,y+14,{align:'center'});};
+    DS(M,data.resumo.conforme,'CONFORME',[34,197,94]);
+    DS(M+bW+3,data.resumo.naoConforme,'NAO CONFORME',[239,68,68]);
+    DS(M+2*(bW+3),data.resumo.naoAplicavel,'NAO APLICAVEL',[100,116,139]);
+    DS(M+3*(bW+3),data.resumo.total,'TOTAL',[10,22,40]);
+    y+=20;
+    SH('4. CHECKLIST');
+    for(const item of data.items){
+      const nH=14+(item.observacao?10:0)+(item.photos&&item.photos.length>0?32:0);
+      if(y+nH>H-M){doc.addPage();y=M;}
+      const rC=item.resposta==='C'?[34,197,94]:item.resposta==='N'?[239,68,68]:[100,116,139];
+      const rT=item.resposta==='C'?'CONFORME':item.resposta==='N'?'NAO CONFORME':'N/A';
+      doc.setDrawColor(226,232,240);doc.setLineWidth(0.3);doc.rect(M,y,W-2*M,12);
+      doc.setFillColor(10,22,40);doc.rect(M,y,8,12,'F');
+      doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(10);
+      doc.text(String(item.num),M+4,y+8,{align:'center'});
+      doc.setFillColor(...rC);doc.rect(W-M-28,y+1,26,10,'F');
+      doc.setTextColor(255,255,255);doc.setFontSize(7);doc.text(rT,W-M-15,y+7,{align:'center'});
+      doc.setTextColor(10,22,40);doc.setFont('helvetica','normal');doc.setFontSize(8);
+      const tL=doc.splitTextToSize(item.text,W-2*M-42);doc.text(tL.slice(0,2),M+10,y+5);y+=14;
+      if(item.observacao){doc.setFillColor(254,226,226);doc.rect(M,y,W-2*M,8,'F');doc.setTextColor(220,38,38);doc.setFont('helvetica','bold');doc.setFontSize(7);doc.text('OBS:',M+2,y+5);doc.setFont('helvetica','normal');doc.setTextColor(10,22,40);doc.text(doc.splitTextToSize(item.observacao,W-2*M-18).slice(0,1),M+14,y+5);y+=10;}
+      if(item.photos&&item.photos.length>0){
+        if(y+32>H-M){doc.addPage();y=M;}
+        let px=M;
+        for(let i=0;i<Math.min(item.photos.length,4);i++){try{doc.addImage(item.photos[i],'JPEG',px,y,35,28);doc.setDrawColor(242,101,34);doc.setLineWidth(.5);doc.rect(px,y,35,28);px+=38;}catch(e){}}
+        y+=31;
       }
-      doc.setTextColor(10, 22, 40);
-      doc.text(formatDate(i.dados.dataInspecao), margin + 2, y + 4);
-      doc.text(i.dados.placa || '-', margin + 26, y + 4);
-      doc.text((i.dados.nomeCondutor || '-').substring(0, 32), margin + 50, y + 4);
-      doc.text(String(i.resumo?.conforme || 0), margin + 116, y + 4);
-      doc.text(String(i.resumo?.naoConforme || 0), margin + 124, y + 4);
-      doc.text(String(i.resumo?.naoAplicavel || 0), margin + 134, y + 4);
-      const col = i.status === 'APROVADO' ? [34, 197, 94] : i.status === 'REPROVADO' ? [239, 68, 68] : [234, 179, 8];
-      doc.setTextColor(...col);
-      doc.setFont('helvetica', 'bold');
-      doc.text(i.status, margin + 148, y + 4);
-      doc.setFont('helvetica', 'normal');
-      doc.setDrawColor(230, 230, 230);
-      doc.line(margin, y + 6, pageW - margin, y + 6);
-      y += 6;
+      y+=2;
     }
-
-    // Footer
-    const tp = doc.internal.getNumberOfPages();
-    for (let p = 1; p <= tp; p++) {
-      doc.setPage(p);
-      doc.setFillColor(10, 22, 40);
-      doc.rect(0, pageH - 8, pageW, 8, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(7);
-      doc.setFont('helvetica', 'normal');
-      doc.text('COTESA ENGENHARIA · Relatório Consolidado · Uso Interno', margin, pageH - 3);
-      doc.text(`Pág. ${p}/${tp}`, pageW - margin, pageH - 3, { align: 'right' });
-    }
-
-    doc.save(`COTESA_Consolidado_${new Date().toISOString().slice(0,10)}.pdf`);
-    showToast('✓ Relatório gerado');
-  } catch(err) {
-    console.error(err);
-    showToast('⚠️ Erro: ' + err.message);
-  }
+    if(data.obsGerais){if(y+20>H-M){doc.addPage();y=M;}SH('5. OBSERVACOES GERAIS');doc.setTextColor(10,22,40);doc.setFont('helvetica','normal');doc.setFontSize(9);const oL=doc.splitTextToSize(data.obsGerais,W-2*M-4);doc.text(oL,M+2,y+2);y+=oL.length*4+6;}
+    if(y+44>H-M){doc.addPage();y=M;}
+    SH('6. DECLARACAO E APROVACAO');
+    doc.setTextColor(100,116,139);doc.setFont('helvetica','italic');doc.setFontSize(8);
+    const dL=doc.splitTextToSize('Declaro que realizei a inspecao pre-uso do veiculo informado conforme PRO-039864.',W-2*M-4);
+    doc.text(dL,M+2,y);y+=dL.length*4+6;
+    doc.setDrawColor(10,22,40);doc.setLineWidth(0.3);doc.rect(M,y,80,28);
+    doc.setFillColor(244,246,249);doc.rect(M,y,80,6,'F');
+    doc.setTextColor(10,22,40);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('RESPONSAVEL PELA INSPECAO',M+40,y+4,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(100,116,139);
+    doc.text(data.dados.nomeCondutor||'-',M+40,y+13,{align:'center'});
+    doc.text('Mat: '+(data.dados.matricula||'-'),M+40,y+18,{align:'center'});
+    doc.line(M+5,y+24,M+75,y+24);doc.text('Assinatura',M+40,y+27,{align:'center'});
+    doc.setDrawColor(226,232,240);doc.rect(W-M-80,y,80,28);
+    doc.setFillColor(234,179,8);doc.rect(W-M-80,y,80,6,'F');
+    doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text('APROVACAO DO SUPERVISOR',W-M-40,y+4,{align:'center'});
+    doc.setTextColor(100,116,139);doc.setFont('helvetica','normal');doc.setFontSize(7);
+    doc.text('Status: PENDENTE',W-M-40,y+14,{align:'center'});
+    doc.line(W-M-75,y+24,W-M-5,y+24);doc.text('Assinatura Supervisor',W-M-40,y+27,{align:'center'});
+    const tp=doc.internal.getNumberOfPages();
+    for(let p=1;p<=tp;p++){doc.setPage(p);doc.setFillColor(10,22,40);doc.rect(0,H-8,W,8,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('COTESA ENGENHARIA - Contrato 3050 Vale - Uso Interno',M,H-3);doc.text('Pag. '+p+'/'+tp,W-M,H-3,{align:'right'});}
+    doc.save(`Inspecao_${data.dados.placa}_${data.dados.dataInspecao}.pdf`);
+    toast('✓ PDF gerado com sucesso!');
+  }catch(err){console.error(err);toast('⚠️ Erro: '+err.message);}
 }
 
-// ==================== HELPERS ====================
-function formatDate(d) {
-  if (!d) return '-';
-  const parts = d.split('-');
-  if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-  return d;
+async function enviarEmail(){
+  if(!inspId){toast('⚠️ Salve a inspeção primeiro');return;}
+  const data=JSON.parse(localStorage.getItem(SK)||'[]').find(i=>i.id===inspId);
+  if(!data)return;
+  toast('📄 Gerando PDF primeiro...',2500);
+  await gerarPDF();
+  await new Promise(r=>setTimeout(r,1500));
+  const nc=data.items.filter(i=>i.resposta==='N');
+  const subj=`[COTESA] Inspecao Veiculo ${data.dados.placa} - ${fmtDate(data.dados.dataInspecao)}`;
+  let body=`RELATORIO DE INSPECAO - COTESA\nPRO-039864 | Contrato 3050 Vale\nID: ${data.id}\n\n`;
+  body+=`VEICULO: ${data.dados.placa} | ${data.dados.modelo||'-'} ${data.dados.ano||''} | Km: ${data.dados.km||'-'}\n`;
+  body+=`RESPONSAVEL: ${data.dados.nomeCondutor} | Mat: ${data.dados.matricula}\n`;
+  body+=`Data/Hora: ${fmtDate(data.dados.dataInspecao)} ${data.dados.horaInspecao}\n\n`;
+  body+=`RESUMO: ${data.resumo.conforme} Conforme | ${data.resumo.naoConforme} Nao Conforme | ${data.resumo.naoAplicavel} N/A\n\n`;
+  if(nc.length){body+=`ITENS NAO CONFORMES:\n`;nc.forEach(i=>{body+=`${i.num}. ${i.text.substring(0,100)}\n`;if(i.observacao)body+=`   Obs: ${i.observacao}\n`;});body+='\n';}
+  else body+=`RESULTADO: APROVADO - Todos os itens conformes\n\n`;
+  if(data.obsGerais)body+=`OBSERVACOES: ${data.obsGerais}\n\n`;
+  body+=`Status: PENDENTE - Aguardando aprovacao do Supervisor\n`;
+  body+=`\n** O PDF foi baixado. Annexe o arquivo antes de enviar. **\nArquivo: Inspecao_${data.dados.placa}_${data.dados.dataInspecao}.pdf`;
+  window.location.href=`mailto:${data.dados.emailResponsavel}?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  setTimeout(()=>toast('✓ PDF baixado + e-mail aberto — annexe o PDF'),800);
 }
-function closeModal(id) {
-  document.getElementById(id).classList.remove('active');
-}
-function showToast(msg, duration = 3000) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
-}
+
+window.addEventListener('DOMContentLoaded',updateNav);
 </script>
 </body>
 </html>
