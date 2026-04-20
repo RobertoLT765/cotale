@@ -9046,6 +9046,24 @@ var saveInsp = function saveInsp(arr, changedItem) {
 // ═══════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', function () {
   try {
+    // Teste de conexão + pre-carregamento de usuarios
+    if (typeof rtdb !== 'undefined' && navigator.onLine) {
+      rtdb.ref('usuarios').once('value').then(function(snap) {
+        var data = snap.val();
+        if (data) {
+          localStorage.setItem('cotesa_users_v1', JSON.stringify(Object.values(data)));
+          console.log('Firebase OK - ' + Object.keys(data).length + ' usuarios carregados');
+        } else {
+          // Banco vazio - criar admin
+          console.log('Firebase OK - banco vazio, criando admin');
+          createAdminUser();
+        }
+      }).catch(function(err) {
+        console.log('Firebase indisponivel:', err.code, '- usando modo local');
+        showSyncStatus('offline');
+      });
+    }
+
     // Iniciar Firebase listeners imediatamente
     startRealtimeListeners();
     
@@ -9164,21 +9182,46 @@ function switchAuthTab(tab) {
 function doLogin() {
   var user = document.getElementById('loginUser').value.trim();
   var pass = document.getElementById('loginPass').value;
-  if (!user || !pass) {
-    toast('Preencha usuario e senha');
-    return;
+  if (!user || !pass) { toast('Preencha usuario e senha'); return; }
+
+  // Show loading
+  var btnLogin = document.querySelector('#auth-login .btn-ora');
+  if (btnLogin) { btnLogin.textContent = 'Buscando...'; btnLogin.disabled = true; }
+
+  function restoreBtn() {
+    if (btnLogin) { btnLogin.textContent = 'ENTRAR'; btnLogin.disabled = false; }
   }
-  // Firebase: fetch fresh user data cross-device
+
   if (typeof rtdb !== 'undefined' && navigator.onLine) {
+    // Timeout de 8 segundos para evitar ficar travado
+    var timedOut = false;
+    var timer = setTimeout(function() {
+      timedOut = true;
+      restoreBtn();
+      toast('Sem resposta do servidor. Tentando offline...');
+      doLoginCheck(user, pass);
+    }, 8000);
+
     rtdb.ref('usuarios').once('value').then(function(snap) {
+      if (timedOut) return;
+      clearTimeout(timer);
+      restoreBtn();
       var data = snap.val();
       if (data) {
         var fbUsers = Object.values(data);
         localStorage.setItem('cotesa_users_v1', JSON.stringify(fbUsers));
       }
       doLoginCheck(user, pass);
-    }).catch(function() { doLoginCheck(user, pass); });
+    }).catch(function(err) {
+      if (timedOut) return;
+      clearTimeout(timer);
+      restoreBtn();
+      console.log('Firebase login error:', err.message);
+      toast('Usando dados locais...');
+      doLoginCheck(user, pass);
+    });
   } else {
+    restoreBtn();
     doLoginCheck(user, pass);
   }
 }
@@ -9191,8 +9234,12 @@ function doLoginCheck(user, pass) {
       found = users[i]; break;
     }
   }
-  if (!found || found.senha !== simpleHash(pass)) {
-    toast('Usuario ou senha incorretos');
+  if (!found) {
+    toast('Usuario nao encontrado. Verifique a matricula.');
+    return;
+  }
+  if (found.senha !== simpleHash(pass)) {
+    toast('Senha incorreta. Tente novamente.');
     return;
   }
   currentUser = found;
